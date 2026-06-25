@@ -1,0 +1,2395 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Syed Tahir Ahamed R">
+    <meta name="description" content="CardioInsight AI - Heart Disease Risk Predictor & Dataset Dashboard. Designed and engineered by Syed Tahir Ahamed R. Powered by standard clinical datasets.">
+    <title>CardioInsight AI - Heart Disease Risk Predictor | Designed by Syed Tahir Ahamed R</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Tailwind Configuration for custom styles -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        darkbg: '#05060b',
+                        glassbg: 'rgba(11, 13, 23, 0.7)',
+                        glassborder: 'rgba(255, 255, 255, 0.05)',
+                        accent: {
+                            blue: '#4f46e5',
+                            teal: '#14b8a6',
+                            rose: '#f43f5e',
+                            amber: '#f59e0b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #030408;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 0%, rgba(20, 184, 166, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(244, 63, 94, 0.04) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: #f3f4f6;
+        }
+        
+        .glass-panel {
+            background: rgba(10, 12, 22, 0.65);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.07);
+            transform: translateY(-2px);
+        }
+
+        .input-card {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: all 0.2s ease;
+        }
+
+        .input-card:focus-within {
+            border-color: rgba(79, 70, 229, 0.4);
+            background: rgba(79, 70, 229, 0.02);
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(5, 6, 10, 0.3);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Circular progress bar SVG animation */
+        .circle-progress {
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Custom radio group buttons */
+        .radio-card {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .radio-card input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .radio-card-design {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.01);
+            transition: all 0.2s ease;
+        }
+        .radio-card input:checked + .radio-card-design {
+            border-color: #4f46e5;
+            background: rgba(79, 70, 229, 0.15);
+            box-shadow: 0 0 12px rgba(79, 70, 229, 0.2);
+            color: #ffffff;
+        }
+        .radio-card:hover .radio-card-design {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Range slider styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            box-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+            background: #6366f1;
+        }
+        
+        .tab-btn {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .mode-btn {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .mode-btn.active {
+            background: #4f46e5;
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+        }
+
+        /* Step wizard progress */
+        .step-bubble.active {
+            border-color: #4f46e5;
+            background: #4f46e5;
+            color: white;
+            box-shadow: 0 0 12px rgba(79, 70, 229, 0.5);
+        }
+        .step-bubble.completed {
+            border-color: #14b8a6;
+            background: #14b8a6;
+            color: white;
+        }
+
+        /* Heartbeat Animation */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+        .heartbeat-element {
+            animation: pulse-ring 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="font-sans min-h-screen text-slate-200">
+    <!-- Medical Disclaimer & Consent Modal -->
+    <div id="disclaimer-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 transition-opacity duration-300 opacity-100" style="display: none;">
+        <div class="glass-panel p-8 rounded-2xl max-w-lg w-full mx-4 border border-indigo-500/20 shadow-2xl relative overflow-hidden flex flex-col gap-5 text-center transform scale-100 transition-transform duration-300">
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+            
+            <div class="flex flex-col items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-indigo-950/80 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                    <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                </div>
+                <h2 class="text-xl font-bold font-outfit text-white">Clinical Disclaimer & Safety Agreement</h2>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest font-mono">CardioInsight AI Predictor Tool</p>
+            </div>
+            
+            <div class="text-left text-xs text-slate-300 bg-slate-950/60 p-4 rounded-xl border border-slate-900/80 space-y-3 leading-relaxed max-h-[250px] overflow-y-auto">
+                <p class="font-semibold text-white">Please read and accept the following conditions to proceed:</p>
+                
+                <div class="flex gap-2">
+                    <i data-lucide="info" class="w-4 h-4 text-indigo-400 shrink-0 mt-0.5"></i>
+                    <p><strong>Educational & Research Use Only:</strong> This application is powered by a machine learning model trained on historical statistical records. It is intended strictly for educational, informational, and research purposes.</p>
+                </div>
+                
+                <div class="flex gap-2">
+                    <i data-lucide="activity" class="w-4 h-4 text-rose-400 shrink-0 mt-0.5"></i>
+                    <p><strong>Not a Medical Diagnostic Device:</strong> This tool is <strong>not</strong> a medical device. It has not been approved by the FDA, CE, or any other healthcare regulatory authority. It does not diagnose, treat, prevent, or cure any cardiovascular diseases.</p>
+                </div>
+
+                <div class="flex gap-2">
+                    <i data-lucide="stethoscope" class="w-4 h-4 text-teal-400 shrink-0 mt-0.5"></i>
+                    <p><strong>No Doctor-Patient Relationship:</strong> The calculations, scores, and statistics provided by this app do not constitute medical advice or establish a professional doctor-patient relationship. You must always seek the advice of a qualified cardiologist or physician regarding any heart health concerns.</p>
+                </div>
+                
+                <div class="flex gap-2">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-purple-400 shrink-0 mt-0.5"></i>
+                    <p><strong>Clinical Limitation:</strong> The underlying algorithm is based on 918 patients from UCI heart repositories (aged 28 to 77). Real-world outcomes may vary significantly due to factors not captured in the dataset (e.g. genetics, lifestyle, medications).</p>
+                </div>
+            </div>
+            
+            <div class="flex flex-col gap-2.5">
+                <button onclick="acceptDisclaimer()" class="w-full py-3 text-xs font-bold uppercase tracking-wider rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white transition shadow-lg shadow-indigo-950/40 flex items-center justify-center gap-1.5 font-bold">
+                    <i data-lucide="check-circle" class="w-4.5 h-4.5"></i> I Understand & Accept
+                </button>
+                <button onclick="window.close();" class="text-[10px] text-slate-500 hover:text-slate-400 transition font-semibold">
+                    Decline and Exit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row md:items-center justify-between pb-6 mb-8 border-b border-slate-800/60 gap-4">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-400 bg-indigo-950/60 border border-indigo-900/60 rounded flex items-center gap-1">
+                        <i data-lucide="shield-check" class="w-3 h-3 text-indigo-400"></i>
+                        Clinical Validation: 86.27% Accuracy
+                    </span>
+                    <span class="text-xs text-slate-500 font-mono">UCI Dataset Statistics</span>
+                </div>
+                <h1 class="text-3xl font-extrabold tracking-tight font-outfit mt-1.5 bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent flex items-center gap-2">
+                    <i data-lucide="activity" class="w-8 h-8 text-rose-500 heartbeat-element"></i>
+                    CardioInsight AI
+                </h1>
+                <p class="text-sm text-slate-400 mt-1 max-w-xl">
+                    Check your heart risk level using advanced Machine Learning. User-friendly and clinical modules built inside one cohesive platform.
+                </p>
+            </div>
+            
+            <!-- Tabs (Dashboard / Engine) -->
+            <div class="flex bg-slate-950/80 p-1 border border-slate-900/50 rounded-xl">
+                <button id="tab-predictor-btn" onclick="switchTab('predictor')" class="tab-btn active px-4 py-2 text-xs font-bold uppercase rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+                    <i data-lucide="heart" class="w-3.5 h-3.5"></i>
+                    Risk Predictor
+                </button>
+                <button id="tab-dashboard-btn" onclick="switchTab('dashboard')" class="tab-btn px-4 py-2 text-xs font-bold uppercase rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+                    <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
+                    Data Explorer
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTAINER -->
+        <main class="space-y-6">
+            
+            <!-- SECTION 1: PREDICTOR ENGINE -->
+            <section id="tab-predictor" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Left Column: Inputs Form/Wizard -->
+                <div class="lg:col-span-7 space-y-6">
+                    
+                    <!-- Mode Selection: User-friendly Quiz vs Advanced Form -->
+                    <div class="glass-panel p-2.5 rounded-xl flex items-center justify-between gap-2 border border-slate-800/80">
+                        <span class="text-xs font-bold font-outfit uppercase tracking-wider text-slate-400 pl-2">Select Interface Mode</span>
+                        <div class="flex gap-1.5 bg-slate-950/60 p-1 rounded-lg border border-slate-900/60">
+                            <button id="mode-quiz-btn" onclick="switchMode('quiz')" class="mode-btn active px-4 py-1.5 text-xs font-bold uppercase rounded-md text-slate-400 flex items-center gap-1 transition">
+                                <i data-lucide="compass" class="w-3 h-3"></i>
+                                Smart Assessment
+                            </button>
+                            <button id="mode-clinical-btn" onclick="switchMode('clinical')" class="mode-btn px-4 py-1.5 text-xs font-bold uppercase rounded-md text-slate-400 flex items-center gap-1 transition">
+                                <i data-lucide="flask" class="w-3 h-3"></i>
+                                Clinical Mode
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SUB-PANEL 1: SMART HEALTH ASSESSMENT WIZARD -->
+                    <div id="quiz-container" class="glass-panel p-6 rounded-2xl relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-600"></div>
+                        
+                        <!-- Step Progress Indicator -->
+                        <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-800/60">
+                            <div>
+                                <h3 class="text-lg font-bold font-outfit text-white">Smart Heart Quiz</h3>
+                                <p class="text-xs text-slate-400">Answer a few simple questions to calculate your risk.</p>
+                            </div>
+                            <span id="quiz-step-text" class="text-xs font-mono font-bold text-indigo-400 bg-indigo-950/40 px-2 py-0.5 border border-indigo-900/40 rounded">Step 1 of 4</span>
+                        </div>
+
+                        <!-- Progress Dots -->
+                        <div class="flex justify-between max-w-xs mx-auto mb-8">
+                            <div class="flex items-center w-full">
+                                <div id="dot-1" class="step-bubble active w-7 h-7 rounded-full border border-slate-800 flex items-center justify-center text-xs font-bold">1</div>
+                                <div class="w-full h-0.5 bg-slate-800" id="line-1"></div>
+                            </div>
+                            <div class="flex items-center w-full">
+                                <div id="dot-2" class="step-bubble w-7 h-7 rounded-full border border-slate-800 flex items-center justify-center text-xs font-bold">2</div>
+                                <div class="w-full h-0.5 bg-slate-800" id="line-2"></div>
+                            </div>
+                            <div class="flex items-center w-full">
+                                <div id="dot-3" class="step-bubble w-7 h-7 rounded-full border border-slate-800 flex items-center justify-center text-xs font-bold">3</div>
+                                <div class="w-full h-0.5 bg-slate-800" id="line-3"></div>
+                            </div>
+                            <div id="dot-4" class="step-bubble w-7 h-7 rounded-full border border-slate-800 flex items-center justify-center text-xs font-bold">4</div>
+                        </div>
+
+                        <!-- Step 1: Basic Demographics -->
+                        <div id="quiz-step-1" class="space-y-6">
+                            <div class="space-y-4">
+                                <div class="input-card p-4 rounded-xl">
+                                    <label class="text-sm font-bold block mb-2.5 text-white flex items-center gap-1.5">1. How old are you? <span class="text-rose-500">*</span><span class="group relative cursor-pointer text-slate-500 hover:text-slate-300"><i data-lucide="help-circle" class="w-3.5 h-3.5"></i><span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 text-[10px] bg-slate-950 border border-slate-800 text-slate-300 rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition duration-200 z-50 normal-case font-normal leading-relaxed">Select your age. Risk calculations are adjusted dynamically based on vascular elasticity trends across age cohorts.</span></span></label>
+                                    <input type="number" id="quiz-Age" min="25" max="95" placeholder="Enter your age (yrs) e.g. 45" oninput="syncQuizAge(this.value)" class="bg-slate-950/80 border border-slate-800 text-sm px-4 py-3 rounded-xl text-white outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 w-full font-semibold">
+                                    <p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5 bg-indigo-950/30 p-2.5 rounded-lg border border-indigo-900/40">
+                                        <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-400 shrink-0"></i>
+                                        <span><strong>Age Range:</strong> System limits allow inputs from <strong>25 to 95 years</strong>. Note that the underlying clinical model was trained on records of patients aged <strong>28 to 77 years</strong>; predictions outside this training range may yield reduced accuracy.</span>
+                                    </p>
+                                </div>
+
+                                <div class="input-card p-4 rounded-xl">
+                                    <label class="text-sm font-bold block mb-3 text-white">2. What is your biological sex?</label>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <label class="radio-card">
+                                            <input type="radio" name="quiz-Sex" value="M" onchange="syncQuizGender('M')">
+                                            <div class="radio-card-design py-4 px-3 rounded-xl flex flex-col items-center gap-2 border border-slate-800">
+                                                <i data-lucide="user" class="w-6 h-6 text-indigo-400"></i>
+                                                <span class="text-sm font-semibold">Male</span>
+                                            </div>
+                                        </label>
+                                        <label class="radio-card">
+                                            <input type="radio" name="quiz-Sex" value="F" onchange="syncQuizGender('F')">
+                                            <div class="radio-card-design py-4 px-3 rounded-xl flex flex-col items-center gap-2 border border-slate-800">
+                                                <i data-lucide="user" class="w-6 h-6 text-pink-400"></i>
+                                                <span class="text-sm font-semibold">Female</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 mt-2">Statistics show differing prevalence rates between biological male and female patients.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Symptoms & Pain -->
+                        <div id="quiz-step-2" class="hidden space-y-6">
+                            <div class="space-y-4">
+                                <div class="input-card p-4 rounded-xl">
+                                    <label class="text-sm font-bold block mb-3 text-white">3. Are you experiencing chest pain? If so, what does it feel like?</label>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <label class="radio-card">
+                                            <input type="radio" name="quiz-ChestPainType" value="ASY" onchange="syncQuizCP('ASY')">
+                                            <div class="radio-card-design p-3 rounded-xl flex items-start gap-3 border border-slate-800">
+                                                <div class="p-1 rounded bg-slate-900 border border-slate-800"><i data-lucide="heart-off" class="w-4 h-4 text-slate-400"></i></div>
+                                                <div class="text-left">
+                                                    <div class="text-xs font-bold text-white">No Chest Pain</div>
+                                                    <div class="text-[10px] text-slate-400 mt-0.5">Asymptomatic. No pain symptoms.</div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <label class="radio-card">
+                                            <input type="radio" name="quiz-ChestPainType" value="ATA" onchange="syncQuizCP('ATA')">
+                                            <div class="radio-card-design p-3 rounded-xl flex items-start gap-3 border border-slate-800">
+                                                <div class="p-1 rounded bg-slate-900 border border-slate-800"><i data-lucide="alert-circle" class="w-4 h-4 text-indigo-400"></i></div>
+                                                <div class="text-left">
+                                                    <div class="text-xs font-bold text-white">Mild / Atypical Pain</div>
+                                                    <div class="text-[10px] text-slate-400 mt-0.5">Slight chest discomfort, not classical angina.</div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <label class="radio-card">
+                                            <input type="radio" name="quiz-ChestPainType" value="NAP" onchange="syncQuizCP('NAP')">
+                                            <div class="radio-card-design p-3 rounded-xl flex items-start gap-3 border border-slate-800">
+                                                <div class="p-1 rounded bg-slate-900 border border-slate-800"><i data-lucide="help-circle" class="w-4 h-4 text-teal-400"></i></div>
+                                                <div class="text-left">
+                                                    <div class="text-xs font-bold text-white">Sharp / Stabbing Pain</div>
+                                                    <div class="text-[10px] text-slate-400 mt-0.5">Non-anginal pain, likely muscular or skeletal.</div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <label class="radio-card">
+                                            <input type="radio" name="quiz-ChestPainType" value="TA" onchange="syncQuizCP('TA')">
+                                            <div class="radio-card-design p-3 rounded-xl flex items-start gap-3 border border-slate-800">
+                                                <div class="p-1 rounded bg-slate-900 border border-slate-800"><i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i></div>
+                                                <div class="text-left">
+                                                    <div class="text-xs font-bold text-white">Severe Squeezing Pain</div>
+                                                    <div class="text-[10px] text-slate-400 mt-0.5">Typical angina. Heavy squeezing tightness.</div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="input-card p-4 rounded-xl">
+                                    <label class="text-sm font-bold block mb-3 text-white">4. Do you experience chest tightness/pain during exercise or physical exertion?</label>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <label class="radio-card">
+                                            <input type="radio" name="quiz-ExerciseAngina" value="N" onchange="syncQuizAngina('N')">
+                                            <div class="radio-card-design py-3 px-3 rounded-xl flex items-center justify-center gap-2 border border-slate-800">
+                                                <i data-lucide="x-circle" class="w-4 h-4 text-teal-400"></i>
+                                                <span class="text-sm font-semibold">No, never</span>
+                                            </div>
+                                        </label>
+                                        <label class="radio-card">
+                                            <input type="radio" name="quiz-ExerciseAngina" value="Y" onchange="syncQuizAngina('Y')">
+                                            <div class="radio-card-design py-3 px-3 rounded-xl flex items-center justify-center gap-2 border border-slate-800">
+                                                <i data-lucide="check-circle-2" class="w-4 h-4 text-rose-500"></i>
+                                                <span class="text-sm font-semibold">Yes, I do</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Core Vitals (BP & Cholesterol) -->
+                        <div id="quiz-step-3" class="hidden space-y-6">
+                            <div class="space-y-4">
+                                <!-- Blood Pressure -->
+                                <div class="input-card p-4 rounded-xl">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="text-sm font-bold text-white flex items-center gap-1.5">5. Resting Blood Pressure <span class="text-rose-500">*</span><span class="group relative cursor-pointer text-slate-500 hover:text-slate-300"><i data-lucide="help-circle" class="w-3.5 h-3.5"></i><span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 text-[10px] bg-slate-950 border border-slate-800 text-slate-300 rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition duration-200 z-50 normal-case font-normal leading-relaxed">Systolic blood pressure measured in mm Hg at rest. High BP places chronic mechanical stress on arterial walls.</span></span></label>
+                                        <span id="quiz-bp-desc" class="text-xs text-indigo-400 font-semibold"></span>
+                                    </div>
+                                    <input type="number" id="quiz-BP" min="60" max="250" placeholder="Enter systolic pressure e.g. 120 (mmHg)" oninput="syncQuizBP(this.value)" class="bg-slate-950/80 border border-slate-800 text-sm px-4 py-3 rounded-xl text-white outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 w-full font-semibold">
+                                    <p class="text-[11px] text-slate-500 mt-2">Resting systolic pressure measured in mm Hg upon clinical admission.</p>
+                                </div>
+
+                                <!-- Cholesterol -->
+                                <div class="input-card p-4 rounded-xl">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="text-sm font-bold text-white flex items-center gap-1.5">6. Serum Cholesterol level <span class="text-rose-500">*</span><span class="group relative cursor-pointer text-slate-500 hover:text-slate-300"><i data-lucide="help-circle" class="w-3.5 h-3.5"></i><span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 text-[10px] bg-slate-950 border border-slate-800 text-slate-300 rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition duration-200 z-50 normal-case font-normal leading-relaxed">Serum cholesterol levels in mg/dl. High cholesterol leads to plaque accumulation, narrowing blood pathways.</span></span></label>
+                                        <div class="flex items-center gap-2">
+                                            <label class="inline-flex items-center text-xs text-slate-400 cursor-pointer">
+                                                <input type="checkbox" id="quiz-chol-unknown" onchange="toggleCholesterolUnknown(this.checked)" class="mr-1">
+                                                Don't know (use average)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div id="quiz-chol-input-container">
+                                        <input type="number" id="quiz-Chol" min="0" max="600" placeholder="Enter cholesterol level e.g. 200 (mg/dl)" oninput="syncQuizChol(this.value)" class="bg-slate-950/80 border border-slate-800 text-sm px-4 py-3 rounded-xl text-white outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 w-full font-semibold">
+                                    </div>
+                                    <div class="flex justify-between items-center text-[10px] text-slate-500 mt-2">
+                                        <span>Desirable: &lt;200 mg/dl</span>
+                                        <span id="quiz-chol-desc" class="text-indigo-400 font-semibold"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Fasting Blood Sugar -->
+                                <div class="input-card p-4 rounded-xl">
+                                    <label class="text-sm font-bold block mb-3 text-white flex items-center gap-1.5">7. Fasting Blood Sugar level<span class="group relative cursor-pointer text-slate-500 hover:text-slate-300"><i data-lucide="help-circle" class="w-3.5 h-3.5"></i><span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 text-[10px] bg-slate-950 border border-slate-800 text-slate-300 rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition duration-200 z-50 normal-case font-normal leading-relaxed">Fasting blood sugar level. Values above 120 mg/dl indicate potential diabetes or impaired glucose tolerance.</span></span></label>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <label class="radio-card">
+                                            <input type="radio" name="quiz-FastingBS" value="0" onchange="syncQuizFBS(0)">
+                                            <div class="radio-card-design py-3 px-3 rounded-xl flex items-center justify-center gap-2 border border-slate-800">
+                                                <i data-lucide="cookie" class="w-4 h-4 text-teal-400"></i>
+                                                <span class="text-xs font-semibold">&le; 120 mg/dl (Normal)</span>
+                                            </div>
+                                        </label>
+                                        <label class="radio-card">
+                                            <input type="radio" name="quiz-FastingBS" value="1" onchange="syncQuizFBS(1)">
+                                            <div class="radio-card-design py-3 px-3 rounded-xl flex items-center justify-center gap-2 border border-slate-800">
+                                                <i data-lucide="cookie-candy" class="w-4 h-4 text-rose-500"></i>
+                                                <span class="text-xs font-semibold">&gt; 120 mg/dl (High/Diabetic)</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: ECG and Advanced Heart Activity -->
+                        <div id="quiz-step-4" class="hidden space-y-6">
+                            <div class="space-y-4">
+                                <div class="bg-indigo-950/20 border border-indigo-900/40 p-3.5 rounded-xl flex gap-3 text-xs leading-relaxed text-indigo-300">
+                                    <i data-lucide="info" class="w-4 h-4 text-indigo-400 shrink-0 mt-0.5"></i>
+                                    <div>
+                                        <strong>Medical Note:</strong> The following parameters are usually measured in a clinic or via smartwatch ECG sensors. If you do not have these readings, you can leave them at their standard default values (pre-selected for you).
+                                    </div>
+                                </div>
+
+                                <!-- Max Heart Rate -->
+                                <div class="input-card p-4 rounded-xl">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="text-sm font-bold text-white flex items-center gap-1.5">8. Maximum Exercise Heart Rate <span class="text-rose-500">*</span><span class="group relative cursor-pointer text-slate-500 hover:text-slate-300"><i data-lucide="help-circle" class="w-3.5 h-3.5"></i><span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 text-[10px] bg-slate-950 border border-slate-800 text-slate-300 rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition duration-200 z-50 normal-case font-normal leading-relaxed">The highest heart rate reached during cardiovascular exercise or stress testing. Higher rates denote higher efficiency.</span></span></label>
+                                        <span id="quiz-maxhr-desc" class="text-xs text-teal-400 font-semibold"></span>
+                                    </div>
+                                    <input type="number" id="quiz-MaxHR" min="50" max="250" placeholder="Enter maximum heart rate achieved e.g. 150 (bpm)" oninput="syncQuizMaxHR(this.value)" class="bg-slate-950/80 border border-slate-800 text-sm px-4 py-3 rounded-xl text-white outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 w-full font-semibold">
+                                    <p class="text-[11px] text-slate-500 mt-2">The highest heart rate reached during physical stress/exercise testing.</p>
+                                </div>
+
+                                <!-- ECG / ST Segment -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <!-- Resting ECG -->
+                                    <div class="input-card p-4 rounded-xl">
+                                        <label class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2.5 flex items-center gap-1.5">Resting ECG Results <span class="text-rose-500">*</span><span class="group relative cursor-pointer text-slate-500 hover:text-slate-300"><i data-lucide="help-circle" class="w-3.5 h-3.5"></i><span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 text-[10px] bg-slate-950 border border-slate-800 text-slate-300 rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition duration-200 z-50 normal-case font-normal leading-relaxed">Electrocardiogram resting readings. Can indicate normal rhythm, wave anomalies, or left ventricular enlargement.</span></span></label>
+                                        <div class="space-y-2">
+                                            <label class="radio-card block">
+                                                <input type="radio" name="quiz-RestingECG" value="Normal" onchange="syncQuizECG('Normal')">
+                                                <div class="radio-card-design px-3.5 py-2.5 text-xs rounded-lg border border-slate-800 text-left">
+                                                    <div class="font-bold text-white">Normal ECG Profile</div>
+                                                    <div class="text-[10px] text-slate-400 mt-0.5">Healthy resting electrical activity.</div>
+                                                </div>
+                                            </label>
+                                            <label class="radio-card block">
+                                                <input type="radio" name="quiz-RestingECG" value="ST" onchange="syncQuizECG('ST')">
+                                                <div class="radio-card-design px-3.5 py-2.5 text-xs rounded-lg border border-slate-800 text-left">
+                                                    <div class="font-bold text-white">ST-T Wave Abnormality</div>
+                                                    <div class="text-[10px] text-slate-400 mt-0.5">Minor deviations. Can indicate fatigue, stress, or early blood flow restriction.</div>
+                                                </div>
+                                            </label>
+                                            <label class="radio-card block">
+                                                <input type="radio" name="quiz-RestingECG" value="LVH" onchange="syncQuizECG('LVH')">
+                                                <div class="radio-card-design px-3.5 py-2.5 text-xs rounded-lg border border-slate-800 text-left">
+                                                    <div class="font-bold text-white">Left Ventricle Hypertrophy (LVH)</div>
+                                                    <div class="text-[10px] text-slate-400 mt-0.5">Thickened muscle wall in main chamber, common with chronic high blood pressure.</div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- ST Slope -->
+                                    <div class="input-card p-4 rounded-xl">
+                                        <label class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2.5 flex items-center gap-1.5">ST Segment Slope during Exercise <span class="text-rose-500">*</span><span class="group relative cursor-pointer text-slate-500 hover:text-slate-300"><i data-lucide="help-circle" class="w-3.5 h-3.5"></i><span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 text-[10px] bg-slate-950 border border-slate-800 text-slate-300 rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition duration-200 z-50 normal-case font-normal leading-relaxed">The slope of the ST segment during stress. An upsloping recovery is normal, whereas flat or downsloping points to heart muscle strain.</span></span></label>
+                                        <div class="space-y-2">
+                                            <label class="radio-card block" title="Normal response to exercise">
+                                                <input type="radio" name="quiz-ST_Slope" value="Up" onchange="syncQuizSlope('Up')">
+                                                <div class="radio-card-design px-3.5 py-2.5 text-xs rounded-lg border border-slate-800 text-left">
+                                                    <div class="font-bold text-white">Upsloping (Normal)</div>
+                                                    <div class="text-[10px] text-slate-400 mt-0.5">Standard response. Heart rate recovers efficiently during exercise.</div>
+                                                </div>
+                                            </label>
+                                            <label class="radio-card block" title="Flat ST, indicator of strain">
+                                                <input type="radio" name="quiz-ST_Slope" value="Flat" onchange="syncQuizSlope('Flat')">
+                                                <div class="radio-card-design px-3.5 py-2.5 text-xs rounded-lg border border-slate-800 text-left">
+                                                    <div class="font-bold text-white">Flat Line (Borderline)</div>
+                                                    <div class="text-[10px] text-slate-400 mt-0.5">No rise under stress. Often represents mild oxygen or blood restriction.</div>
+                                                </div>
+                                            </label>
+                                            <label class="radio-card block" title="Downsloping, indicator of severe strain">
+                                                <input type="radio" name="quiz-ST_Slope" value="Down" onchange="syncQuizSlope('Down')">
+                                                <div class="radio-card-design px-3.5 py-2.5 text-xs rounded-lg border border-slate-800 text-left">
+                                                    <div class="font-bold text-white">Downsloping (Abnormal)</div>
+                                                    <div class="text-[10px] text-slate-400 mt-0.5">Electrical segment drops. Clear indicator of potential blood supply block.</div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Wizard Footer Actions -->
+                        <div class="flex justify-between items-center mt-8 pt-4 border-t border-slate-800/60">
+                            <button id="quiz-btn-prev" onclick="prevQuizStep()" class="px-4 py-2 text-xs font-bold uppercase bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg text-slate-300 transition disabled:opacity-30" disabled>
+                                Back
+                            </button>
+                            <button id="quiz-btn-next" onclick="nextQuizStep()" class="px-5 py-2 text-xs font-bold uppercase bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white transition flex items-center gap-1.5 shadow-md shadow-indigo-950/40">
+                                Next Step
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SUB-PANEL 2: ADVANCED CLINICAL FORM (Hidden by default) -->
+                    <div id="clinical-container" class="glass-panel p-6 rounded-2xl relative overflow-hidden hidden">
+                        <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-600"></div>
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-lg font-bold font-outfit text-white">Clinical Form Module</h3>
+                                <p class="text-xs text-slate-400">Directly adjust model coefficients and features.</p>
+                            </div>
+                            <button onclick="resetForm()" class="text-xs text-slate-400 hover:text-white font-semibold flex items-center gap-1 border border-slate-800 px-2.5 py-1 rounded-lg bg-slate-950/40">
+                                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                                Reset Defaults
+                            </button>
+                        </div>
+                        
+                        <!-- Form -->
+                        <form id="clinical-form" class="space-y-5" oninput="debouncedPredict()">
+                            <!-- Grid for Numerical Slider inputs -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Age -->
+                                <div class="input-card p-3.5 rounded-xl">
+                                    <div class="flex justify-between items-center mb-1.5">
+                                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1">Age <span class="text-[9px] text-slate-500 lowercase font-mono">(range: 25-95, trained: 28-77)</span></label>
+                                        <span id="val-Age" class="text-sm font-bold text-white font-mono bg-slate-900 px-2 py-0.5 rounded">50</span>
+                                    </div>
+                                    <input type="range" id="input-Age" min="25" max="95" value="50" oninput="syncFromClinical('Age', this.value)" class="w-full">
+                                </div>
+                                <!-- Resting BP -->
+                                <div class="input-card p-3.5 rounded-xl">
+                                    <div class="flex justify-between items-center mb-1.5">
+                                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Resting BP (mmHg)</label>
+                                        <span id="val-RestingBP" class="text-sm font-bold text-white font-mono bg-slate-900 px-2 py-0.5 rounded">130</span>
+                                    </div>
+                                    <input type="range" id="input-RestingBP" min="80" max="200" value="130" oninput="syncFromClinical('RestingBP', this.value)" class="w-full">
+                                </div>
+                                <!-- Serum Cholesterol -->
+                                <div class="input-card p-3.5 rounded-xl">
+                                    <div class="flex justify-between items-center mb-1.5">
+                                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Cholesterol (mg/dl)</label>
+                                        <span id="val-Cholesterol" class="text-sm font-bold text-white font-mono bg-slate-900 px-2 py-0.5 rounded">240</span>
+                                    </div>
+                                    <input type="range" id="input-Cholesterol" min="0" max="600" value="240" oninput="syncFromClinical('Cholesterol', this.value)" class="w-full">
+                                </div>
+                                <!-- Max Heart Rate -->
+                                <div class="input-card p-3.5 rounded-xl">
+                                    <div class="flex justify-between items-center mb-1.5">
+                                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Max Heart Rate (MaxHR)</label>
+                                        <span id="val-MaxHR" class="text-sm font-bold text-white font-mono bg-slate-900 px-2 py-0.5 rounded">140</span>
+                                    </div>
+                                    <input type="range" id="input-MaxHR" min="60" max="220" value="140" oninput="syncFromClinical('MaxHR', this.value)" class="w-full">
+                                </div>
+                            </div>
+
+                            <!-- Oldpeak & Sugar -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Oldpeak -->
+                                <div class="input-card p-3.5 rounded-xl">
+                                    <div class="flex justify-between items-center mb-1.5">
+                                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Oldpeak (ST Depression)</label>
+                                        <span id="val-Oldpeak" class="text-sm font-bold text-white font-mono bg-slate-900 px-2 py-0.5 rounded">1.0</span>
+                                    </div>
+                                    <input type="range" id="input-Oldpeak" min="0.0" max="6.0" step="0.1" value="1.0" oninput="syncFromClinical('Oldpeak', this.value)" class="w-full">
+                                </div>
+                                <!-- Fasting Blood Sugar -->
+                                <div class="input-card p-3.5 rounded-xl">
+                                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">Fasting Blood Sugar</label>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <label class="radio-card">
+                                            <input type="radio" name="FastingBS" value="0" onchange="syncFromClinical('FastingBS', 0)">
+                                            <div class="radio-card-design text-center py-2 px-1 text-xs rounded-lg font-medium text-slate-400">&le; 120 mg/dl</div>
+                                        </label>
+                                        <label class="radio-card">
+                                            <input type="radio" name="FastingBS" value="1" onchange="syncFromClinical('FastingBS', 1)">
+                                            <div class="radio-card-design text-center py-2 px-1 text-xs rounded-lg font-medium text-slate-400">&gt; 120 mg/dl</div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4">
+                                <!-- Sex & Exercise Angina -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <!-- Sex -->
+                                    <div class="input-card p-3.5 rounded-xl">
+                                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">Sex / Gender</label>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <label class="radio-card">
+                                                <input type="radio" name="Sex" value="M" onchange="syncFromClinical('Sex', 'M')">
+                                                <div class="radio-card-design text-center py-2 px-1 text-xs rounded-lg font-medium text-slate-400">Male</div>
+                                            </label>
+                                            <label class="radio-card">
+                                                <input type="radio" name="Sex" value="F" onchange="syncFromClinical('Sex', 'F')">
+                                                <div class="radio-card-design text-center py-2 px-1 text-xs rounded-lg font-medium text-slate-400">Female</div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <!-- Exercise Angina -->
+                                    <div class="input-card p-3.5 rounded-xl">
+                                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">Exercise Induced Angina</label>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <label class="radio-card">
+                                                <input type="radio" name="ExerciseAngina" value="N" onchange="syncFromClinical('ExerciseAngina', 'N')">
+                                                <div class="radio-card-design text-center py-2 px-1 text-xs rounded-lg font-medium text-slate-400">No</div>
+                                            </label>
+                                            <label class="radio-card">
+                                                <input type="radio" name="ExerciseAngina" value="Y" onchange="syncFromClinical('ExerciseAngina', 'Y')">
+                                                <div class="radio-card-design text-center py-2 px-1 text-xs rounded-lg font-medium text-slate-400">Yes</div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Chest Pain Type -->
+                                <div class="input-card p-3.5 rounded-xl">
+                                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">Chest Pain Type</label>
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                        <label class="radio-card">
+                                            <input type="radio" name="ChestPainType" value="ASY" onchange="syncFromClinical('ChestPainType', 'ASY')">
+                                            <div class="radio-card-design text-center py-2 px-1 text-[11px] rounded-lg font-semibold text-slate-400">Asymptomatic (ASY)</div>
+                                        </label>
+                                        <label class="radio-card">
+                                            <input type="radio" name="ChestPainType" value="ATA" onchange="syncFromClinical('ChestPainType', 'ATA')">
+                                            <div class="radio-card-design text-center py-2 px-1 text-[11px] rounded-lg font-semibold text-slate-400">Atypical (ATA)</div>
+                                        </label>
+                                        <label class="radio-card">
+                                            <input type="radio" name="ChestPainType" value="NAP" onchange="syncFromClinical('ChestPainType', 'NAP')">
+                                            <div class="radio-card-design text-center py-2 px-1 text-[11px] rounded-lg font-semibold text-slate-400">Non-Anginal (NAP)</div>
+                                        </label>
+                                        <label class="radio-card">
+                                            <input type="radio" name="ChestPainType" value="TA" onchange="syncFromClinical('ChestPainType', 'TA')">
+                                            <div class="radio-card-design text-center py-2 px-1 text-[11px] rounded-lg font-semibold text-slate-400">Typical (TA)</div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Resting ECG -->
+                                <div class="input-card p-3.5 rounded-xl">
+                                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">Resting ECG Results</label>
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                        <label class="radio-card">
+                                            <input type="radio" name="RestingECG" value="Normal" onchange="syncFromClinical('RestingECG', 'Normal')">
+                                            <div class="radio-card-design text-center py-2 px-1 text-[11px] rounded-lg font-semibold text-slate-400">Normal</div>
+                                        </label>
+                                        <label class="radio-card">
+                                            <input type="radio" name="RestingECG" value="ST" onchange="syncFromClinical('RestingECG', 'ST')">
+                                            <div class="radio-card-design text-center py-2 px-1 text-[11px] rounded-lg font-semibold text-slate-400">ST-T Abnormality</div>
+                                        </label>
+                                        <label class="radio-card">
+                                            <input type="radio" name="RestingECG" value="LVH" onchange="syncFromClinical('RestingECG', 'LVH')">
+                                            <div class="radio-card-design text-center py-2 px-1 text-[11px] rounded-lg font-semibold text-slate-400">LV Hypertrophy (LVH)</div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- ST Slope -->
+                                <div class="input-card p-3.5 rounded-xl">
+                                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">ST Segment Slope</label>
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <label class="radio-card">
+                                            <input type="radio" name="ST_Slope" value="Up" onchange="syncFromClinical('ST_Slope', 'Up')">
+                                            <div class="radio-card-design text-center py-2 px-1 text-[11px] rounded-lg font-semibold text-slate-400">Upsloping (Up)</div>
+                                        </label>
+                                        <label class="radio-card">
+                                            <input type="radio" name="ST_Slope" value="Flat" onchange="syncFromClinical('ST_Slope', 'Flat')">
+                                            <div class="radio-card-design text-center py-2 px-1 text-[11px] rounded-lg font-semibold text-slate-400">Flat</div>
+                                        </label>
+                                        <label class="radio-card">
+                                            <input type="radio" name="ST_Slope" value="Down" onchange="syncFromClinical('ST_Slope', 'Down')">
+                                            <div class="radio-card-design text-center py-2 px-1 text-[11px] rounded-lg font-semibold text-slate-400">Downsloping (Down)</div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Right Column: Watch dial and Drivers -->
+                <div class="lg:col-span-5 space-y-6">
+                    <!-- Circular Dial Results (Smartwatch style) -->
+                    <div class="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[350px]">
+                        <div class="absolute inset-0 bg-gradient-to-b from-indigo-950/10 to-transparent pointer-events-none"></div>
+                        
+                        <h3 class="text-sm font-bold tracking-wider font-outfit uppercase text-slate-400 mb-1 flex items-center gap-1.5">
+                            <i data-lucide="heart-pulse" class="w-4 h-4 text-rose-500"></i>
+                            Assessment Status
+                        </h3>
+                        <p class="text-[9px] text-slate-500 font-mono mb-4">Calculations analyzed against 918 clinical patient records</p>
+                        
+                        <!-- Watch face container -->
+                        <div class="relative w-52 h-52 flex items-center justify-center bg-slate-950/50 rounded-full border border-slate-900/80 p-4 shadow-inner">
+                            <!-- Circular Gauge -->
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                <!-- Track -->
+                                <circle cx="50" cy="50" r="41" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="6"></circle>
+                                <!-- Progress -->
+                                <circle id="gauge-circle" class="circle-progress" cx="50" cy="50" r="41" fill="none" stroke="#4f46e5" stroke-width="7" stroke-dasharray="257.6" stroke-dashoffset="257.6" stroke-linecap="round"></circle>
+                            </svg>
+                            <!-- Watch screen center text -->
+                            <div class="absolute flex flex-col items-center justify-center">
+                                <i id="beating-heart" data-lucide="heart" class="w-5 h-5 text-slate-500 heartbeat-element mb-1"></i>
+                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Risk Score</span>
+                                <span id="risk-percentage" class="text-3xl font-extrabold font-outfit text-white my-0.5">--%</span>
+                                <span id="risk-badge" class="px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest rounded border border-slate-700 bg-slate-900">AWAITING</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="mt-5 max-w-sm">
+                            <p id="risk-description" class="text-xs text-slate-400 leading-relaxed font-medium">
+                                Slide values or complete the quiz to calculate dynamic risk statistics.
+                            </p>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="mt-6 w-full pt-4 border-t border-slate-800/60 flex items-center justify-center gap-3">
+                            <button onclick="triggerPrediction()" class="px-4 py-2 text-xs font-bold uppercase bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white rounded-lg transition flex items-center gap-1">
+                                <i data-lucide="refresh-cw" class="w-3 h-3 text-slate-400"></i>
+                                Recalculate
+                            </button>
+                            <button onclick="printClinicalReport()" class="px-4 py-2 text-xs font-bold uppercase bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-lg transition shadow-md shadow-indigo-950/40 flex items-center gap-1">
+                                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                                Print Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Personal Risk Drivers Explanation -->
+                    <div class="glass-panel p-6 rounded-2xl relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1.5 h-full bg-teal-600"></div>
+                        <h3 class="text-sm font-bold tracking-wide font-outfit text-white mb-2 flex items-center gap-1.5">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-teal-400"></i>
+                            Key Risk Factors
+                        </h3>
+                        <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                            These elements from your vitals are currently pushing your cardiovascular threat level:
+                        </p>
+                        
+                        <!-- List of drivers -->
+                        <div id="impact-container" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+                            <!-- Populated by JS -->
+                            <div class="text-slate-500 text-center py-8 text-xs">Waiting for vital calculations...</div>
+                        </div>
+                    </div>
+                    <!-- Cardiovascular Metrics Guide Accordion -->
+                    <div class="glass-panel p-6 rounded-2xl relative overflow-hidden mt-6">
+                        <div class="absolute top-0 left-0 w-1.5 h-full bg-amber-500"></div>
+                        <h3 class="text-sm font-bold tracking-wide font-outfit text-white mb-2 flex items-center gap-1.5">
+                            <i data-lucide="book-open" class="w-4 h-4 text-amber-400"></i>
+                            Patient Metrics Guide & Glossary
+                        </h3>
+                        <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                            Click on any medical parameter below to learn what it means, why it matters, and how it is measured:
+                        </p>
+                        
+                        <div class="space-y-2 text-xs">
+                            <!-- Item 1: Resting ECG -->
+                            <details class="group border-b border-slate-800/80 pb-2">
+                                <summary class="flex justify-between items-center font-semibold text-slate-200 cursor-pointer list-none select-none">
+                                    <span>Resting ECG Results</span>
+                                    <span class="transition group-open:rotate-180"><i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500"></i></span>
+                                </summary>
+                                <div class="mt-2 text-[11px] text-slate-400 leading-relaxed space-y-1.5 pl-1.5">
+                                    <p>Measures electrical activity in your heart while you are resting. This can show signs of heart strain, thickening, or damage:</p>
+                                    <ul class="list-disc pl-3.5 space-y-1">
+                                        <li><strong class="text-slate-300">Normal:</strong> Healthy resting heart rhythm with standard electrical pathways.</li>
+                                        <li><strong class="text-slate-300">ST-T Wave Abnormality:</strong> Minor deviations in the electrical waves. Can indicate minor oxygen restriction, fatigue, stress, or minor blockages.</li>
+                                        <li><strong class="text-slate-300">Left Ventricular Hypertrophy (LVH):</strong> Enlargement/thickening of the muscle walls of the main chamber. Commonly due to long-term high blood pressure.</li>
+                                    </ul>
+                                </div>
+                            </details>
+
+                            <!-- Item 2: ST Segment Slope -->
+                            <details class="group border-b border-slate-800/80 pb-2">
+                                <summary class="flex justify-between items-center font-semibold text-slate-200 cursor-pointer list-none select-none">
+                                    <span>ST Segment Slope during Exercise</span>
+                                    <span class="transition group-open:rotate-180"><i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500"></i></span>
+                                </summary>
+                                <div class="mt-2 text-[11px] text-slate-400 leading-relaxed space-y-1.5 pl-1.5">
+                                    <p>The ST segment represents the interval when the heart ventricles are contracting. During exercise testing, its slope is a key indicator of cardiac workload health:</p>
+                                    <ul class="list-disc pl-3.5 space-y-1">
+                                        <li><strong class="text-slate-300">Upsloping (Normal):</strong> The standard healthy response where the line rises quickly as exercise ends, indicating high heart recovery efficiency.</li>
+                                        <li><strong class="text-slate-300">Flat Line (Borderline):</strong> The line remains horizontal under stress, indicating possible mild strain or restricted oxygen supply.</li>
+                                        <li><strong class="text-slate-300">Downsloping (Abnormal):</strong> The line drops below baseline under stress, suggesting significant blood flow restriction to the heart muscle.</li>
+                                    </ul>
+                                </div>
+                            </details>
+
+                            <!-- Item 3: Chest Pain Type -->
+                            <details class="group border-b border-slate-800/80 pb-2">
+                                <summary class="flex justify-between items-center font-semibold text-slate-200 cursor-pointer list-none select-none">
+                                    <span>Chest Pain Types Explained</span>
+                                    <span class="transition group-open:rotate-180"><i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500"></i></span>
+                                </summary>
+                                <div class="mt-2 text-[11px] text-slate-400 leading-relaxed space-y-1.5 pl-1.5">
+                                    <p>Chest pain is categorized into four distinct categories based on its clinical characteristics:</p>
+                                    <ul class="list-disc pl-3.5 space-y-1">
+                                        <li><strong class="text-slate-300">Typical Angina (TA):</strong> Severe squeezing chest tightness or pressure, triggered by physical exertion or stress. Direct signal of temporary cardiac oxygen shortage.</li>
+                                        <li><strong class="text-slate-300">Atypical Angina (ATA):</strong> Minor chest pain or discomfort that does not fit the typical description. Often not related to direct coronary artery disease.</li>
+                                        <li><strong class="text-slate-300">Non-Anginal Pain (NAP):</strong> Sharp or stabbing pain that is usually skeletal, muscular, or respiratory (e.g. pain with deep breaths).</li>
+                                        <li><strong class="text-slate-300">Asymptomatic (ASY):</strong> No chest pain or tightness whatsoever.</li>
+                                    </ul>
+                                </div>
+                            </details>
+
+                            <!-- Item 4: Other Heart Vitals -->
+                            <details class="group pb-1">
+                                <summary class="flex justify-between items-center font-semibold text-slate-200 cursor-pointer list-none select-none">
+                                    <span>Blood Pressure, Cholesterol & Heart Rate</span>
+                                    <span class="transition group-open:rotate-180"><i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500"></i></span>
+                                </summary>
+                                <div class="mt-2 text-[11px] text-slate-400 leading-relaxed space-y-2 pl-1.5">
+                                    <div>
+                                        <strong class="text-slate-300">Resting Blood Pressure (mmHg):</strong> 
+                                        Systolic pressure in the arteries. Optimal is &lt;120 mmHg. Chronic elevated pressure (over 130-140) forces the heart to work harder.
+                                    </div>
+                                    <div>
+                                        <strong class="text-slate-300">Serum Cholesterol (mg/dl):</strong> 
+                                        Fat levels in the blood. Desirable levels are &lt;200 mg/dl. High cholesterol can contribute to arterial plaque.
+                                    </div>
+                                    <div>
+                                        <strong class="text-slate-300">Max Exercise Heart Rate (bpm):</strong> 
+                                        The peak heart rate achieved during effort. An efficient heart is capable of achieving a higher maximum heart rate. Recommended peak rate is estimated as <code class="font-mono text-slate-300">220 - Age</code>.
+                                    </div>
+                                    <div>
+                                        <strong class="text-slate-300">Oldpeak (ST Depression):</strong> 
+                                        Measured as the vertical distance of ECG depression during exercise compared to rest. Larger values suggest higher stress/fatigue in heart muscle.
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: DATASET DASHBOARD -->
+            <section id="tab-dashboard" class="hidden space-y-6">
+                <!-- Summary Stats Grid -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="glass-panel p-5 rounded-2xl">
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest block">Total Records</span>
+                        <span id="stat-total" class="text-3xl font-extrabold font-outfit text-white mt-1 block">--</span>
+                        <span class="text-[10px] text-indigo-400 mt-1 block">UCI Heart Repository</span>
+                    </div>
+                    <div class="glass-panel p-5 rounded-2xl">
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest block">Disease Prevalence</span>
+                        <span id="stat-rate" class="text-3xl font-extrabold font-outfit text-rose-500 mt-1 block">--</span>
+                        <span class="text-[10px] text-slate-400 mt-1 block">508 positive / 410 negative</span>
+                    </div>
+                    <div class="glass-panel p-5 rounded-2xl">
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest block">Average Age</span>
+                        <span id="stat-age" class="text-3xl font-extrabold font-outfit text-white mt-1 block">--</span>
+                        <span class="text-[10px] text-slate-400 mt-1 block">Range: 28 - 77 years</span>
+                    </div>
+                    <div class="glass-panel p-5 rounded-2xl">
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest block">Avg Serum Cholesterol</span>
+                        <span id="stat-chol" class="text-3xl font-extrabold font-outfit text-teal-400 mt-1 block">--</span>
+                        <span class="text-[10px] text-amber-500 mt-1 block">Warning: contains 0 values (missing data)</span>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Age Distribution -->
+                    <div class="glass-panel p-5 rounded-2xl lg:col-span-2">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Age Group Distribution & Heart Disease Prevalence</h3>
+                        <div class="h-[280px] w-full">
+                            <canvas id="chart-age"></canvas>
+                        </div>
+                    </div>
+                    <!-- Correlation values -->
+                    <div class="glass-panel p-5 rounded-2xl">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Correlation of Features with Heart Disease</h3>
+                        <div class="h-[280px] w-full">
+                            <canvas id="chart-correlation"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Two columns: Chest Pain and ST Slope -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Chest Pain Distribution -->
+                    <div class="glass-panel p-5 rounded-2xl">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Chest Pain Type vs Heart Disease Prevalence</h3>
+                        <div class="h-[250px] w-full">
+                            <canvas id="chart-cp"></canvas>
+                        </div>
+                    </div>
+                    <!-- ST Slope Distribution -->
+                    <div class="glass-panel p-5 rounded-2xl">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">ST Segment Slope vs Heart Disease Prevalence</h3>
+                        <div class="h-[250px] w-full">
+                            <canvas id="chart-slope"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Database Explorer -->
+                <div class="glass-panel p-5 rounded-2xl">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-white font-outfit">Patient Dataset Explorer</h3>
+                            <p class="text-xs text-slate-400">View and filter records loaded from heart.csv (showing first 100 rows)</p>
+                        </div>
+                        <input type="text" id="db-search" oninput="filterTable()" placeholder="Search patient database..." class="bg-slate-900 border border-slate-800 text-xs px-4 py-2 rounded-lg text-slate-200 outline-none focus:border-indigo-600 w-full md:w-64">
+                    </div>
+                    
+                    <div class="overflow-x-auto rounded-xl border border-slate-800/80">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-950/80 text-slate-400 border-b border-slate-800">
+                                    <th class="p-3 font-semibold">ID</th>
+                                    <th class="p-3 font-semibold">Name</th>
+                                    <th class="p-3 font-semibold">Age</th>
+                                    <th class="p-3 font-semibold">Sex</th>
+                                    <th class="p-3 font-semibold">ChestPainType</th>
+                                    <th class="p-3 font-semibold">RestingBP</th>
+                                    <th class="p-3 font-semibold">Cholesterol</th>
+                                    <th class="p-3 font-semibold">FastingBS</th>
+                                    <th class="p-3 font-semibold">RestingECG</th>
+                                    <th class="p-3 font-semibold">MaxHR</th>
+                                    <th class="p-3 font-semibold">ExerciseAngina</th>
+                                    <th class="p-3 font-semibold">Oldpeak</th>
+                                    <th class="p-3 font-semibold">ST_Slope</th>
+                                    <th class="p-3 font-semibold text-right">HeartDisease</th>
+                                    <th class="p-3 font-semibold text-right">Case Study</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body" class="divide-y divide-slate-800/60 bg-slate-950/20">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="flex items-center justify-between mt-4">
+                        <span id="table-info" class="text-xs text-slate-500">Showing 1-10 of 100 rows</span>
+                        <div class="flex gap-2">
+                            <button id="btn-prev" onclick="prevPage()" class="px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition disabled:opacity-50">Previous</button>
+                            <button id="btn-next" onclick="nextPage()" class="px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition disabled:opacity-50">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PREMIUM FOOTER -->
+            <footer class="w-full mt-12 py-6 border-t border-slate-800/60 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+                <div>
+                    <p class="font-semibold text-slate-400">© 2026 CardioInsight AI. All rights reserved.</p>
+                    <p class="text-[10px] mt-0.5 text-slate-600">Educational machine learning platform based on historical statistics.</p>
+                </div>
+                <div class="flex items-center gap-2 bg-slate-950/40 px-3.5 py-1.5 rounded-full border border-slate-800/80">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Designed & Engineered by <strong class="text-indigo-400 font-semibold font-outfit">Syed Tahir Ahamed R</strong></span>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Print Report Template -->
+    <div id="print-template" class="hidden">
+        <div style="font-family: sans-serif; color: #1e293b; padding: 40px; max-width: 800px; margin: 0 auto; background: white;">
+            <div style="border-bottom: 2px solid #4f46e5; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 style="color: #4f46e5; margin: 0; font-size: 28px;">CardioInsight AI</h1>
+                    <p style="color: #64748b; margin: 5px 0 0 0; font-size: 14px;">Clinical Cardiovascular Risk Assessment Report</p>
+                </div>
+                <div style="text-align: right;">
+                    <p style="margin: 0; font-weight: bold; color: #1e293b;">Prediction Source: Logistic Regression</p>
+                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b;" id="print-date">Date: </p>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 30px; background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="margin: 0 0 10px 0; color: #0f172a; font-size: 18px;">Risk Assessment Result</h2>
+                    <p style="margin: 0; font-size: 14px; color: #475569;" id="print-description">...</p>
+                </div>
+                <div style="text-align: center; padding-left: 20px;">
+                    <div style="font-size: 32px; font-weight: 800; color: #4f46e5;" id="print-prob">0%</div>
+                    <div style="font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 99px; display: inline-block; background: #fee2e2; color: #ef4444; margin-top: 5px;" id="print-badge">HIGH</div>
+                </div>
+            </div>
+
+            <h3 style="color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 15px; font-size: 16px;">Patient Demographics & Vitals</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px;">
+                <tr>
+                    <td style="padding: 8px 0; font-weight: bold; color: #475569; width: 25%;">Age:</td>
+                    <td style="padding: 8px 0; color: #0f172a;" id="print-age">50 yrs</td>
+                    <td style="padding: 8px 0; font-weight: bold; color: #475569; width: 25%;">Resting Blood Pressure:</td>
+                    <td style="padding: 8px 0; color: #0f172a;" id="print-bp">130 mmHg</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0; font-weight: bold; color: #475569;">Sex:</td>
+                    <td style="padding: 8px 0; color: #0f172a;" id="print-sex">Male</td>
+                    <td style="padding: 8px 0; font-weight: bold; color: #475569;">Serum Cholesterol:</td>
+                    <td style="padding: 8px 0; color: #0f172a;" id="print-chol">240 mg/dl</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0; font-weight: bold; color: #475569;">Chest Pain Type:</td>
+                    <td style="padding: 8px 0; color: #0f172a;" id="print-cp">Asymptomatic (ASY)</td>
+                    <td style="padding: 8px 0; font-weight: bold; color: #475569;">Max Heart Rate (MaxHR):</td>
+                    <td style="padding: 8px 0; color: #0f172a;" id="print-maxhr">140 bpm</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0; font-weight: bold; color: #475569;">Resting ECG:</td>
+                    <td style="padding: 8px 0; color: #0f172a;" id="print-ecg">Normal</td>
+                    <td style="padding: 8px 0; font-weight: bold; color: #475569;">Exercise-Induced Angina:</td>
+                    <td style="padding: 8px 0; color: #0f172a;" id="print-angina">No</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0; font-weight: bold; color: #475569;">Fasting Blood Sugar:</td>
+                    <td style="padding: 8px 0; color: #0f172a;" id="print-fbs">&le; 120 mg/dl</td>
+                    <td style="padding: 8px 0; font-weight: bold; color: #475569;">ST Segment Slope:</td>
+                    <td style="padding: 8px 0; color: #0f172a;" id="print-slope">Flat</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0; font-weight: bold; color: #475569;">ST Depression (Oldpeak):</td>
+                    <td style="padding: 8px 0; color: #0f172a;" id="print-oldpeak">1.0</td>
+                    <td style="padding: 8px 0;"></td>
+                    <td style="padding: 8px 0;"></td>
+                </tr>
+            </table>
+
+            <h3 style="color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 15px; font-size: 16px;">Key Risk Drivers (Top 5 Contributions)</h3>
+            <div id="print-drivers" style="margin-bottom: 40px;">
+                <!-- Populated by JS -->
+            </div>
+
+            <div style="border-top: 1px solid #e2e8f0; padding-top: 15px; font-size: 11px; color: #94a3b8; text-align: center; margin-top: 60px;">
+                Disclaimer: CardioInsight AI is an educational predictive tool based on historical statistical patterns. It does not replace professional clinical diagnosis or the medical judgment of a qualified healthcare provider.
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN JAVASCRIPT CONTROL LOGIC -->
+    <script>
+        const BACKEND_URL = window.location.origin && window.location.origin !== "null" && window.location.protocol.startsWith("http")
+            ? window.location.origin 
+            : "http://127.0.0.1:5002";
+        
+        let predictionDebounceTimer;
+        let datasetStats = null;
+        let datasetSamples = [];
+        let filteredSamples = [];
+        
+        // Table pagination state
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        
+        // Step Wizard state
+        let currentQuizStep = 1;
+        const totalQuizSteps = 4;
+        let quizCalculated = false;
+        
+        // Chart.js Chart Instances
+        let chartAgeInstance = null;
+        let chartCorrInstance = null;
+        let chartCpInstance = null;
+        let chartSlopeInstance = null;
+
+        // On Load initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            checkDisclaimer();
+            resetForm();
+            loadStats();
+            loadSamples();
+        });
+
+        // Disclaimer Consent Verification
+        function checkDisclaimer() {
+            const accepted = localStorage.getItem('cardio_disclaimer_accepted');
+            const modal = document.getElementById('disclaimer-modal');
+            if (accepted === 'true') {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+            } else {
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+            }
+        }
+        
+        function acceptDisclaimer() {
+            localStorage.setItem('cardio_disclaimer_accepted', 'true');
+            const modal = document.getElementById('disclaimer-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+            }, 300);
+            showToast("Medical Disclaimer accepted. Predictor unlocked.");
+        }
+
+        // Tab Navigation
+        function switchTab(tabId) {
+            const predictorTab = document.getElementById('tab-predictor');
+            const dashboardTab = document.getElementById('tab-dashboard');
+            const predictorBtn = document.getElementById('tab-predictor-btn');
+            const dashboardBtn = document.getElementById('tab-dashboard-btn');
+
+            if (tabId === 'predictor') {
+                predictorTab.classList.remove('hidden');
+                dashboardTab.classList.add('hidden');
+                predictorBtn.classList.add('active');
+                dashboardBtn.classList.remove('active');
+            } else {
+                predictorTab.classList.add('hidden');
+                dashboardTab.classList.remove('hidden');
+                predictorBtn.classList.remove('active');
+                dashboardBtn.classList.add('active');
+                
+                // Redraw charts as canvas requires visible container for sizing
+                setTimeout(() => {
+                    renderCharts();
+                }, 100);
+            }
+        }
+
+        // Interface Mode Navigation (Smart Quiz vs Clinical Form)
+        function switchMode(modeId) {
+            const quizContainer = document.getElementById('quiz-container');
+            const clinicalContainer = document.getElementById('clinical-container');
+            const quizBtn = document.getElementById('mode-quiz-btn');
+            const clinicalBtn = document.getElementById('mode-clinical-btn');
+
+            if (modeId === 'quiz') {
+                quizContainer.classList.remove('hidden');
+                clinicalContainer.classList.add('hidden');
+                quizBtn.classList.add('active');
+                clinicalBtn.classList.remove('active');
+            } else {
+                quizContainer.classList.add('hidden');
+                clinicalContainer.classList.remove('hidden');
+                quizBtn.classList.remove('active');
+                clinicalBtn.classList.add('active');
+                
+                // Switch to clinical mode: automatically recalculate
+                triggerPrediction();
+            }
+        }
+
+        // Quiz Step validation check
+        function checkCurrentStepValidation() {
+            if (currentQuizStep === 1) {
+                const ageVal = document.getElementById('quiz-Age').value;
+                const hasAge = ageVal !== '' && parseInt(ageVal) >= 25 && parseInt(ageVal) <= 95;
+                const hasSex = getSelectedRadio('quiz-Sex') !== '';
+                return hasAge && hasSex;
+            } else if (currentQuizStep === 2) {
+                return getSelectedRadio('quiz-ChestPainType') !== '' && getSelectedRadio('quiz-ExerciseAngina') !== '';
+            } else if (currentQuizStep === 3) {
+                const bpVal = document.getElementById('quiz-BP').value;
+                const cholVal = document.getElementById('quiz-Chol').value;
+                const isCholUnknown = document.getElementById('quiz-chol-unknown').checked;
+                
+                const hasBP = bpVal !== '' && parseInt(bpVal) >= 60 && parseInt(bpVal) <= 250;
+                const hasChol = isCholUnknown || (cholVal !== '' && parseInt(cholVal) >= 0 && parseInt(cholVal) <= 600);
+                const hasFBS = getSelectedRadio('quiz-FastingBS') !== '';
+                
+                return hasBP && hasChol && hasFBS;
+            } else if (currentQuizStep === 4) {
+                const maxHRVal = document.getElementById('quiz-MaxHR').value;
+                const hasMaxHR = maxHRVal !== '' && parseInt(maxHRVal) >= 50 && parseInt(maxHRVal) <= 250;
+                const hasECG = getSelectedRadio('quiz-RestingECG') !== '';
+                const hasSlope = getSelectedRadio('quiz-ST_Slope') !== '';
+                
+                return hasMaxHR && hasECG && hasSlope;
+            }
+            return true;
+        }
+
+        // Render "AWAITING" placeholder on watch dial
+        function showAwaitingUI() {
+            document.getElementById('risk-percentage').textContent = '--%';
+            const badge = document.getElementById('risk-badge');
+            badge.textContent = 'Awaiting';
+            badge.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+            badge.style.color = '#94a3b8';
+            badge.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            
+            const circle = document.getElementById('gauge-circle');
+            circle.style.strokeDashoffset = '257.6';
+            circle.style.stroke = 'rgba(255, 255, 255, 0.08)';
+            
+            document.getElementById('risk-description').textContent = 'Please complete the quiz questions (or select clinical parameters) to calculate your risk level.';
+            
+            const heartEl = document.getElementById('beating-heart');
+            if (heartEl) {
+                heartEl.style.animation = 'none';
+                heartEl.style.color = '#4b5563'; // Neutral grey
+            }
+            
+            const container = document.getElementById('impact-container');
+            container.innerHTML = `
+                <div class="text-slate-500 text-center py-8 text-xs flex flex-col items-center justify-center gap-2">
+                    <i data-lucide="info" class="w-5 h-5 text-slate-600"></i>
+                    <span>Waiting for patient information to calculate risk drivers...</span>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // Quiz Step Wizard Logic
+        function updateQuizStepUI() {
+            // Hide all steps
+            for (let i = 1; i <= totalQuizSteps; i++) {
+                document.getElementById(`quiz-step-${i}`).classList.add('hidden');
+                
+                // Dot state
+                const dot = document.getElementById(`dot-${i}`);
+                if (dot) {
+                    dot.classList.remove('active', 'completed');
+                    if (i < currentQuizStep) {
+                        dot.classList.add('completed');
+                    } else if (i === currentQuizStep) {
+                        dot.classList.add('active');
+                    }
+                }
+                
+                // Line state
+                const line = document.getElementById(`line-${i}`);
+                if (line) {
+                    line.style.backgroundColor = (i < currentQuizStep) ? '#14b8a6' : '#1e293b';
+                }
+            }
+
+            // Show current step
+            document.getElementById(`quiz-step-${currentQuizStep}`).classList.remove('hidden');
+            
+            // Text step counter
+            document.getElementById('quiz-step-text').textContent = `Step ${currentQuizStep} of ${totalQuizSteps}`;
+            
+            // Validate step
+            const isValid = checkCurrentStepValidation();
+            const nextBtn = document.getElementById('quiz-btn-next');
+            nextBtn.disabled = !isValid;
+            nextBtn.style.opacity = isValid ? '1' : '0.4';
+            nextBtn.style.cursor = isValid ? 'pointer' : 'not-allowed';
+            
+            // Buttons state
+            document.getElementById('quiz-btn-prev').disabled = currentQuizStep === 1;
+            if (currentQuizStep === totalQuizSteps) {
+                nextBtn.innerHTML = 'Calculate Risk <i data-lucide="check" class="w-4 h-4 ml-1"></i>';
+            } else {
+                nextBtn.innerHTML = 'Next Step <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>';
+            }
+            lucide.createIcons();
+        }
+
+        function nextQuizStep() {
+            if (currentQuizStep < totalQuizSteps) {
+                currentQuizStep++;
+                updateQuizStepUI();
+            } else {
+                // Final step - trigger evaluation
+                quizCalculated = true;
+                triggerPrediction();
+            }
+        }
+
+        function prevQuizStep() {
+            if (currentQuizStep > 1) {
+                currentQuizStep--;
+                updateQuizStepUI();
+            }
+        }
+
+        // Synchronize Quiz values with Clinical values to ensure models match
+        function syncQuizAge(val) {
+            if (val === '') {
+                updateQuizStepUI();
+                debouncedPredict();
+                return;
+            }
+            document.getElementById('input-Age').value = val;
+            document.getElementById('val-Age').textContent = val;
+            updateQuizStepUI();
+            debouncedPredict();
+        }
+
+        function syncQuizGender(val) {
+            setRadioValue('Sex', val);
+            updateQuizStepUI();
+            debouncedPredict();
+        }
+
+        function syncQuizCP(val) {
+            setRadioValue('ChestPainType', val);
+            updateQuizStepUI();
+            debouncedPredict();
+        }
+
+        function syncQuizAngina(val) {
+            setRadioValue('ExerciseAngina', val);
+            updateQuizStepUI();
+            debouncedPredict();
+        }
+
+        function syncQuizBP(val) {
+            if (val === '') {
+                document.getElementById('quiz-bp-desc').textContent = '';
+                updateQuizStepUI();
+                debouncedPredict();
+                return;
+            }
+            document.getElementById('input-RestingBP').value = val;
+            document.getElementById('val-RestingBP').textContent = val;
+            
+            // Set dynamic BP descriptor
+            const descEl = document.getElementById('quiz-bp-desc');
+            const bp = parseInt(val);
+            if (bp < 120) {
+                descEl.textContent = "Normal";
+                descEl.className = "text-teal-400 font-semibold";
+            } else if (bp < 130) {
+                descEl.textContent = "Elevated";
+                descEl.className = "text-indigo-400 font-semibold";
+            } else if (bp < 140) {
+                descEl.textContent = "Stage 1 Hypertension";
+                descEl.className = "text-amber-500 font-semibold";
+            } else {
+                descEl.textContent = "Stage 2 Hypertension";
+                descEl.className = "text-rose-500 font-semibold";
+            }
+            updateQuizStepUI();
+            debouncedPredict();
+        }
+
+        function toggleCholesterolUnknown(isChecked) {
+            const inputEl = document.getElementById('quiz-Chol');
+            if (isChecked) {
+                inputEl.value = '';
+                inputEl.disabled = true;
+                inputEl.placeholder = "Average (244 mg/dl) is used";
+                inputEl.style.opacity = '0.4';
+                
+                document.getElementById('input-Cholesterol').value = 244;
+                document.getElementById('val-Cholesterol').textContent = '244 (Avg)';
+                
+                const descEl = document.getElementById('quiz-chol-desc');
+                descEl.textContent = "Average Used";
+                descEl.className = "text-indigo-400 font-semibold";
+            } else {
+                inputEl.disabled = false;
+                inputEl.placeholder = "Enter cholesterol level e.g. 200 (mg/dl)";
+                inputEl.style.opacity = '1';
+                document.getElementById('quiz-chol-desc').textContent = '';
+                
+                document.getElementById('input-Cholesterol').value = 240;
+                document.getElementById('val-Cholesterol').textContent = '240';
+            }
+            updateQuizStepUI();
+            debouncedPredict();
+        }
+
+        function syncQuizChol(val) {
+            if (val === '') {
+                document.getElementById('quiz-chol-desc').textContent = '';
+                updateQuizStepUI();
+                debouncedPredict();
+                return;
+            }
+            document.getElementById('input-Cholesterol').value = val;
+            document.getElementById('val-Cholesterol').textContent = val;
+            
+            const descEl = document.getElementById('quiz-chol-desc');
+            const chol = parseInt(val);
+            if (chol < 200) {
+                descEl.textContent = "Desirable";
+                descEl.className = "text-teal-400 font-semibold";
+            } else if (chol < 240) {
+                descEl.textContent = "Borderline High";
+                descEl.className = "text-amber-500 font-semibold";
+            } else {
+                descEl.textContent = "High Risk";
+                descEl.className = "text-rose-500 font-semibold";
+            }
+            updateQuizStepUI();
+            debouncedPredict();
+        }
+
+        function syncQuizFBS(val) {
+            setRadioValue('FastingBS', val.toString());
+            updateQuizStepUI();
+            debouncedPredict();
+        }
+
+        // Maximum Exercise Heart Rate Synchronization
+        function syncQuizMaxHR(val) {
+            if (val === '') {
+                document.getElementById('quiz-maxhr-desc').textContent = '';
+                updateQuizStepUI();
+                debouncedPredict();
+                return;
+            }
+            document.getElementById('input-MaxHR').value = val;
+            document.getElementById('val-MaxHR').textContent = val;
+            
+            const descEl = document.getElementById('quiz-maxhr-desc');
+            const ageVal = document.getElementById('quiz-Age').value;
+            const age = ageVal !== '' ? parseInt(ageVal) : 50;
+            const estMaxHR = 220 - age;
+            const percentage = Math.round((parseInt(val) / estMaxHR) * 100);
+            descEl.textContent = `${percentage}% of Est. Max HR`;
+            
+            updateQuizStepUI();
+            debouncedPredict();
+        }
+
+        function syncQuizECG(val) {
+            setRadioValue('RestingECG', val);
+            updateQuizStepUI();
+            debouncedPredict();
+        }
+
+        // ST Slope segment synchronization
+        function syncQuizSlope(val) {
+            setRadioValue('ST_Slope', val);
+            updateQuizStepUI();
+            debouncedPredict();
+        }
+
+        // Sync values backwards from Clinical mode to Quiz mode
+        function syncFromClinical(id, val) {
+            if (id === 'Age') {
+                document.getElementById('quiz-Age').value = val;
+            } else if (id === 'RestingBP') {
+                document.getElementById('quiz-BP').value = val;
+                syncQuizBP(val);
+            } else if (id === 'Cholesterol') {
+                document.getElementById('quiz-chol-unknown').checked = false;
+                const inputEl = document.getElementById('quiz-Chol');
+                inputEl.disabled = false;
+                inputEl.style.opacity = '1';
+                inputEl.value = val;
+                syncQuizChol(val);
+            } else if (id === 'MaxHR') {
+                document.getElementById('quiz-MaxHR').value = val;
+                syncQuizMaxHR(val);
+            } else if (id === 'Sex') {
+                setQuizRadioValue('quiz-Sex', val);
+            } else if (id === 'ChestPainType') {
+                setQuizRadioValue('quiz-ChestPainType', val);
+            } else if (id === 'ExerciseAngina') {
+                setQuizRadioValue('quiz-ExerciseAngina', val);
+            } else if (id === 'FastingBS') {
+                setQuizRadioValue('quiz-FastingBS', val.toString());
+            } else if (id === 'RestingECG') {
+                setQuizRadioValue('quiz-RestingECG', val);
+            } else if (id === 'ST_Slope') {
+                setQuizRadioValue('quiz-ST_Slope', val);
+            }
+            
+            updateQuizStepUI();
+            debouncedPredict();
+        }
+
+        function setQuizRadioValue(name, value) {
+            const radios = document.getElementsByName(name);
+            for (let r of radios) {
+                if (r.value === value) {
+                    r.checked = true;
+                    break;
+                }
+            }
+        }
+
+        // Reset inputs to default clinical values (no pre-selected answers)
+        function resetForm() {
+            document.getElementById('input-Age').value = 50;
+            document.getElementById('input-RestingBP').value = 130;
+            document.getElementById('input-Cholesterol').value = 240;
+            document.getElementById('input-MaxHR').value = 140;
+            document.getElementById('input-Oldpeak').value = 1.0;
+            
+            // Clear quiz number inputs
+            document.getElementById('quiz-Age').value = '';
+            document.getElementById('quiz-BP').value = '';
+            document.getElementById('quiz-Chol').value = '';
+            document.getElementById('quiz-MaxHR').value = '';
+            
+            document.getElementById('quiz-chol-unknown').checked = false;
+            const cholInput = document.getElementById('quiz-Chol');
+            cholInput.disabled = false;
+            cholInput.style.opacity = '1';
+            cholInput.placeholder = "Enter cholesterol level e.g. 200 (mg/dl)";
+            
+            document.getElementById('quiz-bp-desc').textContent = '';
+            document.getElementById('quiz-chol-desc').textContent = '';
+            document.getElementById('quiz-maxhr-desc').textContent = '';
+
+            // Uncheck all radio buttons on load
+            const radioNames = [
+                'Sex', 'FastingBS', 'ExerciseAngina', 'ChestPainType', 'RestingECG', 'ST_Slope',
+                'quiz-Sex', 'quiz-FastingBS', 'quiz-ExerciseAngina', 'quiz-ChestPainType', 'quiz-RestingECG', 'quiz-ST_Slope'
+            ];
+            radioNames.forEach(name => {
+                const radios = document.getElementsByName(name);
+                for (let r of radios) {
+                    r.checked = false;
+                }
+            });
+            
+            quizCalculated = false;
+            currentQuizStep = 1;
+            updateQuizStepUI();
+
+            updateLabelDisplays();
+            triggerPrediction();
+        }
+
+        function setRadioValue(name, value) {
+            const radios = document.getElementsByName(name);
+            for (let radio of radios) {
+                if (radio.value === value) {
+                    radio.checked = true;
+                    break;
+                }
+            }
+        }
+
+        // Synchronize numeric labels with range slider controls
+        function updateLabelDisplays() {
+            const rangeIds = ['Age', 'RestingBP', 'Cholesterol', 'MaxHR', 'Oldpeak'];
+            rangeIds.forEach(id => {
+                const inputEl = document.getElementById(`input-${id}`);
+                const labelEl = document.getElementById(`val-${id}`);
+                if (inputEl && labelEl) {
+                    labelEl.textContent = inputEl.value;
+                }
+            });
+        }
+
+        // Real-time Prediction Debounce to prevent API flooding
+        function debouncedPredict() {
+            updateLabelDisplays();
+            clearTimeout(predictionDebounceTimer);
+            predictionDebounceTimer = setTimeout(triggerPrediction, 150);
+        }
+
+        // Prepare raw inputs by one-hot encoding them for StandardScaler
+        function prepareModelInputs(formData) {
+            return {
+                Age: formData.Age,
+                RestingBP: formData.RestingBP,
+                Cholesterol: formData.Cholesterol,
+                FastingBS: formData.FastingBS,
+                MaxHR: formData.MaxHR,
+                Oldpeak: formData.Oldpeak,
+                Sex_M: formData.Sex === 'M' ? 1 : 0,
+                ChestPainType_ATA: formData.ChestPainType === 'ATA' ? 1 : 0,
+                ChestPainType_NAP: formData.ChestPainType === 'NAP' ? 1 : 0,
+                ChestPainType_TA: formData.ChestPainType === 'TA' ? 1 : 0,
+                RestingECG_Normal: formData.RestingECG === 'Normal' ? 1 : 0,
+                RestingECG_ST: formData.RestingECG === 'ST' ? 1 : 0,
+                ExerciseAngina_Y: formData.ExerciseAngina === 'Y' ? 1 : 0,
+                ST_Slope_Flat: formData.ST_Slope === 'Flat' ? 1 : 0,
+                ST_Slope_Up: formData.ST_Slope === 'Up' ? 1 : 0
+            };
+        }
+
+        // Client-side Zero-Latency Machine Learning Engine (Logistic Regression)
+        function predictLocal(rawInputs) {
+            const inputs = prepareModelInputs(rawInputs);
+            const colsList = ['Age', 'RestingBP', 'Cholesterol', 'FastingBS', 'MaxHR', 'Oldpeak', 'Sex_M', 'ChestPainType_ATA', 'ChestPainType_NAP', 'ChestPainType_TA', 'RestingECG_Normal', 'RestingECG_ST', 'ExerciseAngina_Y', 'ST_Slope_Flat', 'ST_Slope_Up'];
+            const coef = [0.17037801, 0.0123106, 0.0295025, 0.50528763, -0.18873965, 0.4488342, 0.60360469, -0.63170654, -0.58007532, -0.24637359, -0.00728146, -0.07072744, 0.49836494, 0.55885472, -0.60450283];
+            const intercept = 0.27836358261363614;
+            const mean = [52.951087, 129.733696, 241.684783, 0.255434783, 139.326087, 0.641304348, 0.85326087, 0.184782609, 0.222826087, 0.0760869565, 0.586956522, 0.201086957, 0.369565217, 0.440217391, 0.47826087];
+            const scale = [9.6798086, 18.57358326, 63.28900745, 0.43610532, 25.8230217, 0.89784188, 0.35384567, 0.38812111, 0.41614255, 0.26513719, 0.49238051, 0.40081291, 0.48268703, 0.49641317, 0.49952719];
+            
+            let logOdds = intercept;
+            const featureImpacts = [];
+            
+            const friendlyNames = {
+                "Age": "Age",
+                "RestingBP": "Resting Blood Pressure",
+                "Cholesterol": "Cholesterol",
+                "FastingBS": "Fasting Blood Sugar > 120",
+                "MaxHR": "Max Heart Rate",
+                "Oldpeak": "ST Depression (Oldpeak)",
+                "Sex_M": "Male Gender",
+                "ChestPainType_ATA": "Atypical Angina Chest Pain",
+                "ChestPainType_NAP": "Non-Anginal Chest Pain",
+                "ChestPainType_TA": "Typical Angina Chest Pain",
+                "RestingECG_Normal": "Normal ECG",
+                "RestingECG_ST": "ECG ST-T Wave Abnormality",
+                "ExerciseAngina_Y": "Exercise Induced Angina",
+                "ST_Slope_Flat": "Flat ST Slope",
+                "ST_Slope_Up": "Up-sloping ST Slope"
+            };
+
+            for (let i = 0; i < colsList.length; i++) {
+                const col = colsList[i];
+                const rawVal = inputs[col];
+                const scaledVal = (rawVal - mean[i]) / scale[i];
+                const contribution = coef[i] * scaledVal;
+                logOdds += contribution;
+                
+                // Skip inactive categorical options for clean explanations
+                if (['Sex_M', 'ChestPainType_ATA', 'ChestPainType_NAP', 'ChestPainType_TA', 'RestingECG_Normal', 'RestingECG_ST', 'ExerciseAngina_Y', 'ST_Slope_Flat', 'ST_Slope_Up'].includes(col) && rawVal === 0) {
+                    continue;
+                }
+                
+                featureImpacts.push({
+                    feature: col,
+                    friendly_name: friendlyNames[col] || col,
+                    raw_value: rawVal,
+                    contribution: contribution,
+                    coefficient: coef[i],
+                    direction: contribution > 0 ? "increase" : "decrease",
+                    importance: Math.abs(contribution)
+                });
+            }
+            
+            // Logistic Regression Probability: Sigmoid function
+            const prob = 1 / (1 + Math.exp(-logOdds));
+            
+            // Sort impacts by importance
+            featureImpacts.sort((a, b) => b.importance - a.importance);
+            
+            // Risk levels
+            let risk_level = "Low";
+            let risk_color = "green";
+            let risk_desc = "Your parameters indicate a healthy heart profile. Keep maintaining a balanced diet and active lifestyle!";
+            
+            if (prob >= 0.35 && prob < 0.70) {
+                risk_level = "Moderate";
+                risk_color = "orange";
+                risk_desc = "Your parameters indicate a moderate cardiovascular risk. It is recommended to schedule a checkup and monitor your blood pressure and cholesterol levels.";
+            } else if (prob >= 0.70) {
+                risk_level = "High";
+                risk_color = "red";
+                risk_desc = "Your parameters indicate a high probability of cardiovascular complications. Please consult a medical professional or cardiologist immediately.";
+            }
+            
+            return {
+                probability: Math.round(prob * 1000) / 10, // Round to 1 decimal place
+                prediction: prob >= 0.5 ? 1 : 0,
+                risk_level: risk_level,
+                risk_color: risk_color,
+                risk_description: risk_desc,
+                intercept: intercept,
+                feature_impacts: featureImpacts
+            };
+        }
+
+        // Load case study from dataset row
+        function loadCaseStudy(escapedData) {
+            try {
+                const row = JSON.parse(decodeURIComponent(escapedData));
+                
+                // Set active mode to clinical first
+                switchMode('clinical');
+                
+                // Load clinical values
+                document.getElementById('input-Age').value = row.Age;
+                document.getElementById('val-Age').textContent = row.Age;
+                
+                document.getElementById('input-RestingBP').value = row.RestingBP;
+                document.getElementById('val-RestingBP').textContent = row.RestingBP;
+                
+                document.getElementById('input-Cholesterol').value = row.Cholesterol;
+                document.getElementById('val-Cholesterol').textContent = row.Cholesterol;
+                
+                document.getElementById('input-MaxHR').value = row.MaxHR;
+                document.getElementById('val-MaxHR').textContent = row.MaxHR;
+                
+                document.getElementById('input-Oldpeak').value = row.Oldpeak;
+                document.getElementById('val-Oldpeak').textContent = row.Oldpeak.toFixed(1);
+                
+                setRadioValue('Sex', row.Sex);
+                setRadioValue('ChestPainType', row.ChestPainType);
+                setRadioValue('ExerciseAngina', row.ExerciseAngina);
+                setRadioValue('FastingBS', row.FastingBS.toString());
+                setRadioValue('RestingECG', row.RestingECG);
+                setRadioValue('ST_Slope', row.ST_Slope);
+                
+                // Synchronize quiz values
+                document.getElementById('quiz-Age').value = row.Age;
+                document.getElementById('quiz-BP').value = row.RestingBP;
+                syncQuizBP(row.RestingBP.toString());
+                
+                const cholInput = document.getElementById('quiz-Chol');
+                cholInput.disabled = false;
+                cholInput.style.opacity = '1';
+                cholInput.value = row.Cholesterol;
+                syncQuizChol(row.Cholesterol.toString());
+                document.getElementById('quiz-chol-unknown').checked = false;
+                
+                document.getElementById('quiz-MaxHR').value = row.MaxHR;
+                syncQuizMaxHR(row.MaxHR.toString());
+                
+                setQuizRadioValue('quiz-Sex', row.Sex);
+                setQuizRadioValue('quiz-ChestPainType', row.ChestPainType);
+                setQuizRadioValue('quiz-ExerciseAngina', row.ExerciseAngina);
+                setQuizRadioValue('quiz-FastingBS', row.FastingBS.toString());
+                setQuizRadioValue('quiz-RestingECG', row.RestingECG);
+                setQuizRadioValue('quiz-ST_Slope', row.ST_Slope);
+
+                // Run calculation
+                quizCalculated = true;
+                currentQuizStep = 4;
+                updateQuizStepUI();
+                triggerPrediction();
+                
+                // Switch tab back to predictor
+                switchTab('predictor');
+                
+                // Create a brief alert toast
+                showToast(`Case study loaded: Patient, Age ${row.Age}, ${row.Sex === 'M' ? 'Male' : 'Female'}`);
+            } catch (err) {
+                console.error("Error loading case study:", err);
+            }
+        }
+
+        // Helper to display dynamic feedback toast
+        function showToast(message) {
+            let toast = document.getElementById('toast-notification');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toast-notification';
+                toast.className = 'fixed bottom-5 right-5 bg-indigo-950/95 border border-indigo-500/30 text-white text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 transition duration-300 transform translate-y-10 opacity-0 z-50 font-semibold';
+                document.body.appendChild(toast);
+            }
+            toast.innerHTML = `<i data-lucide="info" class="w-4 h-4 text-indigo-400"></i> <span>${message}</span>`;
+            lucide.createIcons();
+            
+            // Slide in
+            setTimeout(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            }, 50);
+            
+            // Slide out after 3.5s
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+            }, 3500);
+        }
+
+        // API Integration: Run prediction locally for zero-latency, falling back to server if needed
+        async function triggerPrediction() {
+            const hasSex = getSelectedRadio('Sex') !== '';
+            const hasCP = getSelectedRadio('ChestPainType') !== '';
+            const hasAngina = getSelectedRadio('ExerciseAngina') !== '';
+            const hasFBS = getSelectedRadio('FastingBS') !== '';
+            const hasECG = getSelectedRadio('RestingECG') !== '';
+            const hasSlope = getSelectedRadio('ST_Slope') !== '';
+            
+            // Check active mode
+            const activeMode = document.getElementById('mode-quiz-btn').classList.contains('active') ? 'quiz' : 'clinical';
+            
+            if (activeMode === 'quiz' && !quizCalculated) {
+                showAwaitingUI();
+                return;
+            }
+
+            if (!hasSex || !hasCP || !hasAngina || !hasFBS || !hasECG || !hasSlope) {
+                showAwaitingUI();
+                return;
+            }
+
+            const formData = getFormData();
+            
+            try {
+                // Perform calculations instantaneously on the client side!
+                const result = predictLocal(formData);
+                updatePredictionUI(result);
+            } catch (err) {
+                console.error("Local calculation failed, trying backend:", err);
+                
+                // Fallback to Flask backend API
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/predict`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        updatePredictionUI(result);
+                    }
+                } catch (apiErr) {
+                    console.error("Backend fallback also failed:", apiErr);
+                }
+            }
+        }        // Parse form fields into JSON object
+        function getFormData() {
+            return {
+                Age: parseInt(document.getElementById('input-Age').value),
+                RestingBP: parseInt(document.getElementById('input-RestingBP').value),
+                Cholesterol: parseInt(document.getElementById('input-Cholesterol').value),
+                MaxHR: parseInt(document.getElementById('input-MaxHR').value),
+                Oldpeak: parseFloat(document.getElementById('input-Oldpeak').value),
+                FastingBS: parseInt(getSelectedRadio('FastingBS')),
+                Sex: getSelectedRadio('Sex'),
+                ExerciseAngina: getSelectedRadio('ExerciseAngina'),
+                ChestPainType: getSelectedRadio('ChestPainType'),
+                RestingECG: getSelectedRadio('RestingECG'),
+                ST_Slope: getSelectedRadio('ST_Slope')
+            };
+        }
+
+        function getSelectedRadio(name) {
+            const radios = document.getElementsByName(name);
+            for (let r of radios) {
+                if (r.checked) return r.value;
+            }
+            return "";
+        }
+
+        // Render calculated prediction to Gauge and Drivers List
+        function updatePredictionUI(result) {
+            const percentageText = document.getElementById('risk-percentage');
+            const badge = document.getElementById('risk-badge');
+            const desc = document.getElementById('risk-description');
+            const circle = document.getElementById('gauge-circle');
+            
+            // Percentage update
+            percentageText.textContent = `${result.probability}%`;
+            
+            // Circular progress ring updates (R=41, circumference ~257.6)
+            const circumference = 257.6;
+            const offset = circumference - (result.probability / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+            
+            // Style color mapping based on risk level
+            let strokeColor = '#14b8a6'; // Low (Teal)
+            let badgeBg = 'rgba(20, 184, 166, 0.15)';
+            let badgeText = '#14b8a6';
+            let badgeBorder = 'rgba(20, 184, 166, 0.4)';
+            
+            if (result.risk_level === 'Moderate') {
+                strokeColor = '#f59e0b'; // Moderate (Amber)
+                badgeBg = 'rgba(245, 158, 11, 0.15)';
+                badgeText = '#f59e0b';
+                badgeBorder = 'rgba(245, 158, 11, 0.4)';
+            } else if (result.risk_level === 'High') {
+                strokeColor = '#f43f5e'; // High (Rose)
+                badgeBg = 'rgba(244, 63, 94, 0.15)';
+                badgeText = '#f43f5e';
+                badgeBorder = 'rgba(244, 63, 94, 0.4)';
+            }
+            
+            circle.style.stroke = strokeColor;
+            
+            badge.textContent = `${result.risk_level} Risk`;
+            badge.style.backgroundColor = badgeBg;
+            badge.style.color = badgeText;
+            badge.style.borderColor = badgeBorder;
+
+            // Beating heart pulse speed and color mapping based on risk level
+            const heartEl = document.getElementById('beating-heart');
+            if (heartEl) {
+                heartEl.style.display = 'block';
+                if (result.probability < 35) {
+                    heartEl.style.animation = 'pulse-ring 2s infinite ease-in-out';
+                    heartEl.style.color = '#14b8a6'; // Teal
+                } else if (result.probability < 70) {
+                    heartEl.style.animation = 'pulse-ring 1.1s infinite ease-in-out';
+                    heartEl.style.color = '#f59e0b'; // Amber
+                } else {
+                    heartEl.style.animation = 'pulse-ring 0.55s infinite ease-in-out';
+                    heartEl.style.color = '#f43f5e'; // Rose
+                }
+            }
+            
+            desc.textContent = result.risk_description;
+            
+            // Update drivers list
+            const container = document.getElementById('impact-container');
+            container.innerHTML = '';
+            
+            if (result.feature_impacts && result.feature_impacts.length > 0) {
+                result.feature_impacts.forEach(impact => {
+                    const contribution = impact.contribution;
+                    const direction = impact.direction;
+                    const importance = impact.importance;
+                    
+                    const isPositive = direction === "increase";
+                    const barColor = isPositive ? 'bg-rose-500' : 'bg-teal-500';
+                    const textBadgeColor = isPositive ? 'text-rose-400 bg-rose-950/40 border-rose-900/40' : 'text-teal-400 bg-teal-950/40 border-teal-900/40';
+                    const sign = isPositive ? '+' : '';
+                    
+                    // Display scale: map log-odds to relative percentage width
+                    const maxWidthLogOdds = 2.5;
+                    const percentWidth = Math.min((importance / maxWidthLogOdds) * 100, 100);
+                    
+                    const driverRow = document.createElement('div');
+                    driverRow.className = 'glass-card p-3 rounded-xl flex flex-col gap-1.5';
+                    
+                    driverRow.innerHTML = `
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="font-medium text-slate-200">${impact.friendly_name}</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[10px] font-mono text-slate-500">Value: ${formatRawValue(impact.feature, impact.raw_value)}</span>
+                                <span class="px-1.5 py-0.5 rounded font-mono text-[10px] font-bold border ${textBadgeColor}">
+                                    ${sign}${contribution.toFixed(2)}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="w-full bg-slate-900/80 h-1.5 rounded-full overflow-hidden flex ${isPositive ? 'justify-start' : 'justify-end'}">
+                            <div class="${barColor} h-full rounded-full" style="width: ${percentWidth}%"></div>
+                        </div>
+                    `;
+                    container.appendChild(driverRow);
+                });
+            } else {
+                container.innerHTML = '<div class="text-slate-500 text-center py-8 text-xs">No active features computed</div>';
+            }
+        }
+
+        function formatRawValue(feature, val) {
+            if (feature === 'Sex_M') return val === 1 ? 'Male' : 'Female';
+            if (feature === 'FastingBS') return val === 1 ? '> 120 mg/dl' : '<= 120 mg/dl';
+            if (feature === 'ExerciseAngina_Y') return val === 1 ? 'Yes' : 'No';
+            if (feature === 'ST_Slope_Flat' || feature === 'ST_Slope_Up') return val === 1 ? 'Yes' : 'No';
+            if (feature === 'ChestPainType_ATA' || feature === 'ChestPainType_NAP' || feature === 'ChestPainType_TA') return val === 1 ? 'Yes' : 'No';
+            if (feature === 'RestingECG_Normal' || feature === 'RestingECG_ST') return val === 1 ? 'Yes' : 'No';
+            if (feature === 'Age') return `${val} yrs`;
+            if (feature === 'RestingBP') return `${val} mmHg`;
+            if (feature === 'Cholesterol') return `${val} mg/dl`;
+            if (feature === 'MaxHR') return `${val} bpm`;
+            return val;
+        }
+
+        // Fetch dataset stats
+        async function loadStats() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/stats`);
+                if (!response.ok) throw new Error('Stats fetch failed');
+                datasetStats = await response.json();
+                
+                // Populate statistics badges
+                document.getElementById('stat-total').textContent = datasetStats.summary.total_patients;
+                document.getElementById('stat-rate').textContent = `${datasetStats.summary.heart_disease_rate}%`;
+                document.getElementById('stat-age').textContent = `${datasetStats.summary.avg_age} yrs`;
+                document.getElementById('stat-chol').textContent = `${datasetStats.summary.avg_cholesterol} mg/dL`;
+            } catch (err) {
+                console.error("Error loading stats:", err);
+            }
+        }
+
+        // Fetch dataset samples
+        async function loadSamples() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/sample`);
+                if (!response.ok) throw new Error('Sample fetch failed');
+                datasetSamples = await response.json();
+                filteredSamples = [...datasetSamples];
+                renderTable();
+            } catch (err) {
+                console.error("Error loading samples:", err);
+            }
+        }
+
+        // Render dataset explorer table
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            
+            const startIdx = (currentPage - 1) * rowsPerPage;
+            const endIdx = Math.min(startIdx + rowsPerPage, filteredSamples.length);
+            const pageRows = filteredSamples.slice(startIdx, endIdx);
+            
+            if (pageRows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="13" class="p-6 text-center text-slate-500">No matching records found.</td></tr>';
+                document.getElementById('table-info').textContent = 'Showing 0 records';
+                document.getElementById('btn-prev').disabled = true;
+                document.getElementById('btn-next').disabled = true;
+                return;
+            }
+
+            pageRows.forEach((row, i) => {
+                const globalIndex = startIdx + i + 1;
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-900/40 transition";
+                
+                const hdBadge = row.HeartDisease === 1 
+                    ? '<span class="px-2 py-0.5 font-bold rounded bg-rose-950/40 text-rose-400 border border-rose-900/30">Disease</span>' 
+                    : '<span class="px-2 py-0.5 font-bold rounded bg-teal-950/40 text-teal-400 border border-teal-900/30">Normal</span>';
+
+                const rowDataEscaped = encodeURIComponent(JSON.stringify(row));
+
+                tr.innerHTML = `
+                    <td class="p-3 text-slate-400 font-mono">${globalIndex}</td>
+                    <td class="p-3 font-bold text-indigo-400">${row.Name || 'Patient Case'}</td>
+                    <td class="p-3 font-semibold text-white">${row.Age}</td>
+                    <td class="p-3 text-slate-300">${row.Sex}</td>
+                    <td class="p-3 text-slate-300 font-mono">${row.ChestPainType}</td>
+                    <td class="p-3 text-slate-300">${row.RestingBP}</td>
+                    <td class="p-3 text-slate-300">${row.Cholesterol}</td>
+                    <td class="p-3 text-slate-400 font-mono">${row.FastingBS === 1 ? '>120' : '&le;120'}</td>
+                    <td class="p-3 text-slate-400">${row.RestingECG}</td>
+                    <td class="p-3 text-slate-300">${row.MaxHR}</td>
+                    <td class="p-3 text-slate-400">${row.ExerciseAngina}</td>
+                    <td class="p-3 text-slate-300 font-mono">${row.Oldpeak}</td>
+                    <td class="p-3 text-slate-400">${row.ST_Slope}</td>
+                    <td class="p-3 text-right">${hdBadge}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="loadCaseStudy('${rowDataEscaped}')" class="px-2.5 py-1 text-[10px] font-bold uppercase rounded bg-indigo-950 border border-indigo-900/60 hover:border-indigo-500 text-indigo-400 hover:text-white transition flex items-center gap-1 ml-auto">
+                            <i data-lucide="play" class="w-3 h-3"></i> Load
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Update pagination text & buttons
+            document.getElementById('table-info').textContent = `Showing ${startIdx + 1}-${endIdx} of ${filteredSamples.length} rows`;
+            document.getElementById('btn-prev').disabled = currentPage === 1;
+            document.getElementById('btn-next').disabled = endIdx >= filteredSamples.length;
+        }
+
+        // Table search/filtering
+        function filterTable() {
+            const query = document.getElementById('db-search').value.toLowerCase().trim();
+            if (!query) {
+                filteredSamples = [...datasetSamples];
+            } else {
+                filteredSamples = datasetSamples.filter(row => {
+                    const nameMatch = row.Name && row.Name.toLowerCase().includes(query);
+                    return (
+                        nameMatch ||
+                        row.Age.toString().includes(query) ||
+                        row.Sex.toLowerCase().includes(query) ||
+                        row.ChestPainType.toLowerCase().includes(query) ||
+                        row.RestingECG.toLowerCase().includes(query) ||
+                        row.ST_Slope.toLowerCase().includes(query) ||
+                        row.RestingBP.toString().includes(query) ||
+                        row.Cholesterol.toString().includes(query) ||
+                        row.MaxHR.toString().includes(query) ||
+                        row.Oldpeak.toString().includes(query)
+                    );
+                });
+            }
+            currentPage = 1;
+            renderTable();
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredSamples.length / rowsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        }
+
+        // Render all Chart.js visualizations
+        function renderCharts() {
+            if (!datasetStats) return;
+
+            // Chart A: Age distribution
+            const ctxAge = document.getElementById('chart-age').getContext('2d');
+            if (chartAgeInstance) chartAgeInstance.destroy();
+            chartAgeInstance = new Chart(ctxAge, {
+                type: 'bar',
+                data: {
+                    labels: datasetStats.age_dist.labels,
+                    datasets: [
+                        {
+                            label: 'Heart Disease (Positive)',
+                            data: datasetStats.age_dist.heart_disease,
+                            backgroundColor: 'rgba(244, 63, 94, 0.85)',
+                            borderColor: '#f43f5e',
+                            borderWidth: 1.5,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Normal (Negative)',
+                            data: datasetStats.age_dist.normal,
+                            backgroundColor: 'rgba(20, 184, 166, 0.7)',
+                            borderColor: '#14b8a6',
+                            borderWidth: 1.5,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#e2e8f0', font: { family: 'Inter', weight: 'bold' } } }
+                    }
+                }
+            });
+
+            // Chart B: Correlations
+            const ctxCorr = document.getElementById('chart-correlation').getContext('2d');
+            if (chartCorrInstance) chartCorrInstance.destroy();
+            
+            const backgroundColors = datasetStats.correlations.values.map(v => 
+                v > 0 ? 'rgba(244, 63, 94, 0.8)' : 'rgba(20, 184, 166, 0.8)'
+            );
+            const borderColors = datasetStats.correlations.values.map(v => 
+                v > 0 ? '#f43f5e' : '#14b8a6'
+            );
+
+            chartCorrInstance = new Chart(ctxCorr, {
+                type: 'bar',
+                data: {
+                    labels: datasetStats.correlations.features,
+                    datasets: [{
+                        label: 'Pearson Correlation (r)',
+                        data: datasetStats.correlations.values,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1.5,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { 
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }, 
+                            ticks: { color: '#94a3b8' },
+                            min: -0.6,
+                            max: 0.6
+                        },
+                        y: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Chart C: Chest Pain Type
+            const ctxCp = document.getElementById('chart-cp').getContext('2d');
+            if (chartCpInstance) chartCpInstance.destroy();
+            chartCpInstance = new Chart(ctxCp, {
+                type: 'bar',
+                data: {
+                    labels: datasetStats.cp_dist.labels,
+                    datasets: [
+                        {
+                            label: 'Heart Disease',
+                            data: datasetStats.cp_dist.heart_disease,
+                            backgroundColor: 'rgba(244, 63, 94, 0.85)',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Normal',
+                            data: datasetStats.cp_dist.normal,
+                            backgroundColor: 'rgba(20, 184, 166, 0.7)',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#e2e8f0' } }
+                    }
+                }
+            });
+
+            // Chart D: ST Slope
+            const ctxSlope = document.getElementById('chart-slope').getContext('2d');
+            if (chartSlopeInstance) chartSlopeInstance.destroy();
+            chartSlopeInstance = new Chart(ctxSlope, {
+                type: 'bar',
+                data: {
+                    labels: datasetStats.slope_dist.labels,
+                    datasets: [
+                        {
+                            label: 'Heart Disease',
+                            data: datasetStats.slope_dist.heart_disease,
+                            backgroundColor: 'rgba(244, 63, 94, 0.85)',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Normal',
+                            data: datasetStats.slope_dist.normal,
+                            backgroundColor: 'rgba(20, 184, 166, 0.7)',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#e2e8f0' } }
+                    }
+                }
+            });
+        }
+
+        // Print Report generation & execution
+        async function printClinicalReport() {
+            const formData = getFormData();
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/predict`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const result = await response.json();
+                
+                // Populate printed report fields
+                document.getElementById('print-date').textContent = `Date: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
+                document.getElementById('print-prob').textContent = `${result.probability}%`;
+                
+                const badgeEl = document.getElementById('print-badge');
+                badgeEl.textContent = `${result.risk_level} RISK`;
+                if (result.risk_level === 'Low') {
+                    badgeEl.style.background = '#dcfce7';
+                    badgeEl.style.color = '#166534';
+                } else if (result.risk_level === 'Moderate') {
+                    badgeEl.style.background = '#fef3c7';
+                    badgeEl.style.color = '#92400e';
+                } else {
+                    badgeEl.style.background = '#fee2e2';
+                    badgeEl.style.color = '#ef4444';
+                }
+                
+                document.getElementById('print-description').textContent = result.risk_description;
+                
+                // Vitals
+                document.getElementById('print-age').textContent = `${formData.Age} years`;
+                document.getElementById('print-sex').textContent = formData.Sex === 'M' ? 'Male' : 'Female';
+                
+                const cpLabels = { 'ASY': 'Asymptomatic', 'ATA': 'Atypical Angina', 'NAP': 'Non-Anginal Pain', 'TA': 'Typical Angina' };
+                document.getElementById('print-cp').textContent = cpLabels[formData.ChestPainType];
+                
+                document.getElementById('print-bp').textContent = `${formData.RestingBP} mmHg`;
+                document.getElementById('print-chol').textContent = `${formData.Cholesterol} mg/dl`;
+                document.getElementById('print-maxhr').textContent = `${formData.MaxHR} bpm`;
+                document.getElementById('print-ecg').textContent = formData.RestingECG;
+                document.getElementById('print-angina').textContent = formData.ExerciseAngina === 'Y' ? 'Yes' : 'No';
+                document.getElementById('print-fbs').textContent = formData.FastingBS === 1 ? '> 120 mg/dl' : '<= 120 mg/dl';
+                document.getElementById('print-oldpeak').textContent = formData.Oldpeak.toFixed(1);
+                
+                const slopeLabels = { 'Up': 'Upsloping', 'Flat': 'Flat', 'Down': 'Downsloping' };
+                document.getElementById('print-slope').textContent = slopeLabels[formData.ST_Slope];
+                
+                // Top drivers list in print view
+                const driversContainer = document.getElementById('print-drivers');
+                driversContainer.innerHTML = '';
+                
+                const topDrivers = result.feature_impacts.slice(0, 5);
+                topDrivers.forEach(d => {
+                    const sign = d.contribution > 0 ? '+' : '';
+                    const color = d.contribution > 0 ? '#ef4444' : '#10b981';
+                    
+                    const row = document.createElement('div');
+                    row.style.display = 'flex';
+                    row.style.justify = 'space-between';
+                    row.style.padding = '8px 0';
+                    row.style.borderBottom = '1px dashed #e2e8f0';
+                    row.style.fontSize = '12px';
+                    
+                    row.innerHTML = `
+                        <span style="font-weight: 500;">${d.friendly_name} (Value: ${formatRawValue(d.feature, d.raw_value)})</span>
+                        <span style="font-family: monospace; font-weight: bold; color: ${color};">${sign}${d.contribution.toFixed(2)}</span>
+                    `;
+                    driversContainer.appendChild(row);
+                });
+                
+                // Open printing print window
+                const printContents = document.getElementById('print-template').innerHTML;
+                const originalContents = document.body.innerHTML;
+                
+                document.body.innerHTML = printContents;
+                window.print();
+                document.body.innerHTML = originalContents;
+                
+                // Restore bindings
+                window.location.reload();
+                
+            } catch (err) {
+                console.error("Print failed:", err);
+            }
+        }
+    </script>
+</body>
+</html>
